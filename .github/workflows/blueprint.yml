@@ -19,6 +19,8 @@ permissions:
 
 jobs:
   build_project:
+    environment:
+      name: github-pages
     runs-on: ubuntu-latest
     name: Build project
     steps:

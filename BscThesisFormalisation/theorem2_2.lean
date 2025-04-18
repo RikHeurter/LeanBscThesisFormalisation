@@ -1,4 +1,5 @@
 import Mathlib
+import BscThesisFormalisation.definitions
 
 def isEqui (Que : queue) : Prop :=
   sorry

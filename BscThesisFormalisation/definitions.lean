@@ -42,6 +42,8 @@ structure SchedulePolicy where
   speedupF_is_speedup : SpeedUpFunction dim s speedupF
   ispolicy : Policy dim s distributionpolicy policy
   departurerates_uses_speedup: ∀ n, μ * ∑i ∈ (Finset.range (distributionpolicy n)), speedupF (policy n i) = (departurerates n)
+  -- TODO: require that after n becomes greater than ||c||_1 that it actually is indeed the same constantly.
+  -- Otherwise is stable is way more difficult to implement.
 
 
 def IsStable (P : SchedulePolicy) (Λ : ℝ) : Prop :=

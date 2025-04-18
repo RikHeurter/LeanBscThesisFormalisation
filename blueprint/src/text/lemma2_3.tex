@@ -1,3 +1,24 @@
 \chapter{lemma 2.3}\label{ch_lemma2_3}
 
 \section{Change in difficulty}
+In the proof of theorem 2.2 we really quickly state that:
+$$E[N]^{EQUI} \leq E[N]^P,$$
+intuitively this is rather clear, since one of the departurerates being higher clearly means the
+queue goes quicker at some point and thus all else being equal: we would expect less people to be waiting
+in the queue. However this is really cumbersome to actually show via invariant distributions,
+since we now need to prove that a higher throughput at one node, needs more input from lower nodes
+and thus we need to scale the lower portion somewhat.
+
+Specifically we can aim to show the following:
+if $k$ is the index, whose departure rate increased and $\lambda$ is the old situation and $\mu$
+is the new situation then the following should hold for all $i > k$:
+$$\frac{\mu_i}{\sum_{j=k}^\infty \mu_j} = \frac{\lambda_i}{\sum_{j=k}^\infty \lambda_j}$$
+
+We can do a similar trick with $i < k - 1$, and then we can conclude that it is only rescaling on two
+sides and can prove that $\mu_k \leq \lambda_k$.
+
+Even more specifically we can do the following:
+By the fact that the inequalities stay the same for $i < k - 1$ we know that $\mu_i = d\cdot \lambda_i$
+furthermore we know that $\mu_{k+1}$ determines the rest of the inequalities, thus we can also scale all
+those values by $\mu_{k+1}/\lambda_{k+1}$ and thus we only need to look at determing $\mu_{k-1}$ and $\mu_{k}$
+getting a system of equations out of it that describe that $\mu_{k-1} \leq \lambda_{k-1}$ and then we are done!

@@ -1,0 +1,43 @@
+\chapter{General Roadmap}\label{ch_roadmap}
+
+\section{The goal}
+
+\begin{theorem}\label{EQUI_optimal}\lean{BscThesisFormalisation.theorem2_2}
+    Within our model, assuming jobs are malleable, have exponentially distributed sizes,
+and all follow the same speedup function, $s$, $\mathbb{E}[T]^{EQUI} \leq \mathbb{E}[T]^P$ for any scheduling policy $P$.
+\end{theorem}
+
+\begin{proof}\uses{BscThesisFormalisation.lemma2_1, BscThesisFormalisation.lemma2_3}
+Let $P$ be a mapping policy that processes malleable jobs that can be switched between cores without overhead,
+and currently has $i$ active jobs. In every state, $i$, $P$ must decide (i) how many jobs to run,
+(ii) how to allocate the $k$ P-cores and $l$ E-cores among the $i$ jobs. Hence for some $\vec{\alpha},
+\vec{\beta}$ the rate of departures from state $i$ under P is at most
+    $$\mu \sum_{m=1}^j s(k\cdot \alpha_m, l \cdot \beta_m)$$
+with $0 < j \leq \min(i, k+l), \alpha_m + \beta_m > 0, \forall \ 1 \leq m \leq j$ and $||\alpha||_1, \leq 1, ||\beta||_1 \leq 1$. However $||\alpha||_1 < 1$ always has unused cores or core time, which is clearly suboptimal. Therefore we will assume that $||\alpha||_1 = 1 = ||\beta||_1$.\\
+Now we will upperbound the previous summation using the concavity of $s$.
+\begin{align*}
+    \frac{1}{j}\sum_{m=1}^j s (k\alpha_m, l \beta_m) &= \frac{1}{j} s(k \alpha_1, l\beta_1) + \frac{1}{j} s(k \alpha_2, l\beta_2) + \frac{1}{j}\sum_{m=3}^j s (k\alpha_m, l \beta_m)\\
+    &= \frac{2}{j}\left(\frac{1}{2} s(k \alpha_1, l\beta_1) + \frac{1}{2} s(k \alpha_2, l\beta_2)\right) + \frac{1}{j}\sum_{m=3}^j s (k\alpha_m, l \beta_m)\\
+    &\leq \frac{2}{j}\left(s(\frac{k}{2}(\alpha_1 +\alpha_2), \frac{l}{2}(\beta_1 + \beta_2))\right) + \frac{1}{j}\sum_{m=3}^j s (k\alpha_m, l \beta_m)\\
+    % REMOVE THIS
+    % &\leq \frac{2}{j}\left(s(\frac{k}{2}(\alpha_1 +\alpha_2), \frac{l}{2}(\beta_1 + \beta_2))\right) + \frac{1}{j}s (k\alpha_3, l \beta_3) + \frac{1}{j}\sum_{m=4}^j s (k\alpha_m, l \beta_m)\\
+    % &\leq \frac{2}{j}\left(s(\frac{k}{2}(\alpha_1 +\alpha_2), \frac{l}{2}(\beta_1 + \beta_2))\right) + \frac{2}{j} \frac{1}{2}s (k\alpha_3, l \beta_3) + \frac{1}{j}\sum_{m=4}^j s (k\alpha_m, l \beta_m)\\
+    % &\leq \frac{2}{j}\left(s(\frac{k}{2}(\alpha_1 +\alpha_2), \frac{l}{2}(\beta_1 + \beta_2)) + \frac{1}{2}s (k\alpha_3, l \beta_3)\right) + \frac{1}{j}\sum_{m=4}^j s (k\alpha_m, l \beta_m)\\
+    % &\leq \frac{2}{j}\left(\frac{3}{2} \frac{2}{3}s(\frac{k}{2}(\alpha_1 +\alpha_2), \frac{l}{2}(\beta_1 + \beta_2)) + \frac{3}{2} \frac{1}{3}s (k\alpha_3, l \beta_3)\right) + \frac{1}{j}\sum_{m=4}^j s (k\alpha_m, l \beta_m)\\
+    % &\leq \frac{3}{j}\left(\frac{2}{3}s(\frac{k}{2}(\alpha_1 +\alpha_2), \frac{l}{2}(\beta_1 + \beta_2)) + \frac{1}{3}s (k\alpha_3, l \beta_3)\right) + \frac{1}{j}\sum_{m=4}^j s (k\alpha_m, l \beta_m)\\
+    % &\leq \frac{3}{j}\left(s(\frac{2}{3}\frac{k}{2}(\alpha_1 +\alpha_2) + \frac{1}{3}k\alpha_3, \frac{2}{3}\frac{l}{2}(\beta_1 + \beta_2) + \frac{1}{3}l \beta_3)\right) + \frac{1}{j}\sum_{m=4}^j s (k\alpha_m, l \beta_m)\\
+    % TILL HERE
+    &\leq \dots \leq \frac{j}{j} s(\frac{1}{j}\sum_{m=1}^jk\alpha_m, \frac{1}{j}\sum_{m=1}^j l\beta_m) = s(\frac{k}{j}, \frac{l}{j})
+\end{align*}
+% $$\frac{1}{j}\sum_{m=1}^j s (k\alpha_m, l \beta_m)$$
+% we know that $$\frac{1}{j}\sum_{m=1}^j s(k\alpha_m, l\beta_m) \leq s(\frac{k}{j}, \frac{l}{j})$$
+% TODO add something about upperboundedness
+% Which follows from the concavity of $s$.
+Thus we conclude that $$\sum_{m=1}^j s(k\alpha_m, l\beta_m) \leq j\cdot s(\frac{k}{j}, \frac{l}{j}) \qquad \forall 0 < j \leq i, \forall \vec{\alpha},\vec{\beta}$$
+and thus an upperbound on P's rate of departures is $$j \cdot s \left(\frac{k}{j},\frac{l}{j}\right) \mu.$$ From \autoref{thm:lemma_2_1} it follows that $j\cdot s\left(\frac{k}{j},\frac{l}{j}\right)\mu$ is non-decreasing in $j$. And thus to obtain the optimum rate we might as well use $i$ to get an upper-bound of the form:
+$$i\cdot s\left(\frac{k}{i},\frac{l}{i}\right)\mu,$$
+Which is exactly what is achieved by the policy EQUI. Since both markov chains only differ in their departure rates we can conclude that
+$$E[N]^{EQUI} \leq E[N]^P$$
+And now we can use Little's law, which states that the mean response time is the mean number in the system / mean throughput\cite{Littles_law}\textbf{Need a better source for this}. The mean throughput stays the same, by the stability and constant arrival rate. From this we can conclude that
+$$E[T]^{EQUI} \leq E[T]^P$$
+\end{proof}

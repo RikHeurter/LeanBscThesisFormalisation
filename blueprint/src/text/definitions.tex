@@ -1,0 +1,25 @@
+\chapter{definitions}\label{ch_definitions}
+
+\section{General Idea}
+Before we can start proving properties about our actual mathematical object we first need to actually
+start writing down what our definitions are. Thus what we aim to do here is write down all the definitions
+we require.
+
+\section{The definitions}
+
+\begin{definition}\label{BSC.corespace}\lean{BscThesisFormalisation.definitions.coreSpace}\leanok
+   \textit{coreSpace} is defined to be the actual allowed allotment of cores i.e. if given a vector
+   $s \in \mathbb{R}^n$ describing how many cores we have then our corespace becomes:
+   $x \in \mathbb{R}^n$ with the requirement that: $0 \leq x_i \leq s_i$ forall $1 \leq i \leq n$.
+   After this we shall abbreviate this space as $C_s$.
+\end{definition}
+
+The Mathlib library already defines concavity more generally. We redefine our own instance to make
+it easier to work with:
+\begin{definition}\label{BSC.myConcave}\lean{BscThesisFormalisation.definitions.myConcave}\leanok
+  A function $f$ is said to be \textit{concave} on $s \in \mathbb{R^n}$ the core vector if $\forall x, y \in C_s$
+  and all $a, b \in \mathbb{R}$ with the property that $a + b = 1$ implies that:
+  $$a \cdot f(x) + b \cdot f(y) \leq f(a \cdot x + b \cdot y)$$
+\end{definition}
+
+\begin{definition}\label{BSC.Sublinear}\lean{BscThesisFormalisation.definitions.Sublinear}\leanok

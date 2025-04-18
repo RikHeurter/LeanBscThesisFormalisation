@@ -34,10 +34,10 @@ Now we will upperbound the previous summation using the concavity of $s$.
 % TODO add something about upperboundedness
 % Which follows from the concavity of $s$.
 Thus we conclude that $$\sum_{m=1}^j s(k\alpha_m, l\beta_m) \leq j\cdot s(\frac{k}{j}, \frac{l}{j}) \qquad \forall 0 < j \leq i, \forall \vec{\alpha},\vec{\beta}$$
-and thus an upperbound on P's rate of departures is $$j \cdot s \left(\frac{k}{j},\frac{l}{j}\right) \mu.$$ From \autoref{thm:lemma_2_1} it follows that $j\cdot s\left(\frac{k}{j},\frac{l}{j}\right)\mu$ is non-decreasing in $j$. And thus to obtain the optimum rate we might as well use $i$ to get an upper-bound of the form:
+and thus an upperbound on P's rate of departures is $$j \cdot s \left(\frac{k}{j},\frac{l}{j}\right) \mu.$$ From lemma2_1 it follows that $j\cdot s\left(\frac{k}{j},\frac{l}{j}\right)\mu$ is non-decreasing in $j$. And thus to obtain the optimum rate we might as well use $i$ to get an upper-bound of the form:
 $$i\cdot s\left(\frac{k}{i},\frac{l}{i}\right)\mu,$$
 Which is exactly what is achieved by the policy EQUI. Since both markov chains only differ in their departure rates we can conclude that
 $$E[N]^{EQUI} \leq E[N]^P$$
-And now we can use Little's law, which states that the mean response time is the mean number in the system / mean throughput\cite{Littles_law}\textbf{Need a better source for this}. The mean throughput stays the same, by the stability and constant arrival rate. From this we can conclude that
+And now we can use Little's law, which states that the mean response time is the mean number in the system / mean throughput. The mean throughput stays the same, by the stability and constant arrival rate. From this we can conclude that
 $$E[T]^{EQUI} \leq E[T]^P$$
 \end{proof}

@@ -79,8 +79,8 @@ Now we have everything we need to state what a policy is. For this we first defi
   per state $n$ how to allocate cores in $C_c$ over $j$, $0 \leq j \leq n$, jobs. Thus if we write this out,
   $p$ is subject to the following conditions:
   \begin{enumerate}
-    \item $p(i,j) = 0 \forall j > i$.
-    \item $\left(\sum_{k=0}^i p(n, k)\right) \in C_c$
+    \item $p(n,j) = 0 \forall j > n$.
+    \item $\left(\sum_{k=0}^i p(i, k)\right) \in C_c$
     \item $\forall 0 \leq i \leq n, p(n,i) \geq 0$
   \end{enumerate}
 \end{definition}

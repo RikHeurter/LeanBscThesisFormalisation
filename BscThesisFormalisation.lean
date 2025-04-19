@@ -1,4 +1,3 @@
-import Mathlib
 import BscThesisFormalisation.definitions
 import BscThesisFormalisation.lemma2_1
 import BscThesisFormalisation.lemma2_3

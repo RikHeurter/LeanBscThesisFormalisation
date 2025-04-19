@@ -51,7 +51,7 @@ Now the invariant distribution of our queue is simply:
     A infinite-dimensional vector lambda described by a function $\mathbb{N} \to \mathbb{R}$ is said
     to be an \textit{invariant distribution} for a queue $Q$ if the following holds:\
     \begin{enumerate}
-        \item \forall n \in \mathbb{N}, n \neq 0, $\lambda(n-1) * Q(n-1,n) + \lambda(n+1) * Q(n+1,n) = \lambda(n)$
+        \item $\forall n \in \mathbb{N}, n \neq 0, \lambda(n-1) * Q(n-1,n) + \lambda(n+1) * Q(n+1,n) = \lambda(n)$
         \item $\lambda(1) * Q(1,0) = \lambda(0)$
         \item $||\lambda||_1 = 1$.
     \end{enumerate}

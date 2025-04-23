@@ -7,7 +7,7 @@ we require.
 
 \section{Speedup function}
 
-\begin{definition}\label{def:corespace}\lean{BscThesisFormalisation.definitions.coreSpace}\leanok
+\begin{definition}\label{def:corespace}\lean{coreSpace}\leanok
    \textit{coreSpace} is defined to be the actual allowed allotment of cores i.e. if given a vector
    $c \in \mathbb{R}^n$ describing how many cores we have then our corespace becomes:
    $x \in \mathbb{R}^n$ with the requirement that: $0 \leq x_i \leq s_i$ forall $1 \leq i \leq n$.
@@ -16,19 +16,19 @@ we require.
 
 The Mathlib library already defines concavity more generally. We redefine our own instance to make
 it easier to work with:
-\begin{definition}\label{def:myConcave}\uses{def:corespace}\lean{BscThesisFormalisation.definitions.myConcave}\leanok
+\begin{definition}\label{def:myConcave}\uses{def:corespace}\lean{myConcave}\leanok
   A function $f$ is said to be \textit{concave} on $c \in \mathbb{R^n}$ the core vector if $\forall x, y \in C_s$
   and all $a, b \in \mathbb{R}$ with the property that $a + b = 1$ implies that:
   $$a \cdot f(x) + b \cdot f(y) \leq f(a \cdot x + b \cdot y)$$
 \end{definition}
 
-\begin{definition}\label{def:Sublinear}\uses{def:coreSpace}\lean{BscThesisFormalisation.definitions.Sublinear}\leanok
+\begin{definition}\label{def:Sublinear}\uses{def:coreSpace}\lean{Sublinear}\leanok
   A function $f$ is said to be \textit{sublinear} on $C_c$, with $c$ the core vector if $\forall x \in C_S$
   $||f(x)|| \leq ||x||$.
 \end{definition}
 
 This brings us to the definition of the speedup function:
-\begin{definition}\label{def:SpeedUpFunction}\uses{def:Sublinear, def:myConcave}\lean{BscThesisFormalisation.definitions.SpeedUpFunction}\leanok
+\begin{definition}\label{def:SpeedUpFunction}\uses{def:Sublinear, def:myConcave}\lean{SpeedUpFunction}\leanok
   A function $s \colon C_c \to \mathbb{R}$ is said to be a \textit{speedup function} if $s$ is concave
   and sublinear on $C_c$.
 \end{definition}
@@ -36,7 +36,7 @@ This brings us to the definition of the speedup function:
 \section{Markov Chain definitions}
 
 Since our queue will be one-dimensional of infinite size anyway we define our RateMatrix to be the following:
-\begin{definition}\label{def:RateMatrix}\lean{BscThesisFormalisation.definitions.RateMatrix}\leanok
+\begin{definition}\label{def:RateMatrix}\lean{RateMatrix}\leanok
     A function $Q \colon \mathbb{N} \times \mathbb{N} \to \mathbb{R}$ is said to be a rate matrix
     if the following holds:
     \begin{enumerate}
@@ -47,7 +47,7 @@ Since our queue will be one-dimensional of infinite size anyway we define our Ra
 \end{definition}
 
 Now the invariant distribution of our queue is simply:
-\begin{definition}\label{def:InvariantDistribution}\uses{def:RateMatrix}\lean{BscThesisFormalisation.definitions.InvariantDistribution}\leanok
+\begin{definition}\label{def:InvariantDistribution}\uses{def:RateMatrix}\lean{InvariantDistribution}\leanok
     A infinite-dimensional vector lambda described by a function $\mathbb{N} \to \mathbb{R}$ is said
     to be an \textit{invariant distribution} for a queue $Q$ if the following holds:\
     \begin{enumerate}
@@ -65,7 +65,7 @@ And then the mean number in the system is:
 
 We will define the mean response time of our queue directly dependent on Little's law, since the only
 way we evaluate our mean response time is by invoking Little's law anyway.
-\begin{definition}\label{def:MeanResponseTime}\uses{def:MeanLambda}\lean{BscThesisFormalisation.definitions.MeanResponseTime}\leanok
+\begin{definition}\label{def:MeanResponseTime}\uses{def:MeanLambda}\lean{MeanResponseTimePolicy}\leanok
     The \textit{mean response time}, denoted as $\mathbb{E}[T]$ of a queue is defined to be the mean
     number in the system / mean throughput i.e. (mean throughput is equal to $\Lambda$ since this doesn't vary
     per state):
@@ -74,7 +74,7 @@ way we evaluate our mean response time is by invoking Little's law anyway.
 
 \section{Scheduling Policy}
 Now we have everything we need to state what a policy is. For this we first define what a policy is.
-\begin{definition}\label{def:Policy}\uses{def:SpeedUpFunction}\lean{BscThesisFormalisation.definitions.Policy}\leanok
+\begin{definition}\label{def:Policy}\uses{def:SpeedUpFunction}\lean{Policy}\leanok
   A \textit{policy} is a function $p \colon \mathbb{N} \times \mathbb{N} \to \mathbb{R}^n$ describing
   per state $n$ how to allocate cores in $C_c$ over $j$, $0 \leq j \leq n$, jobs. Thus if we write this out,
   $p$ is subject to the following conditions:
@@ -86,7 +86,7 @@ Now we have everything we need to state what a policy is. For this we first defi
 \end{definition}
 
 Now we can define the magnum opus of our actual definitions: the schedule policy.
-\begin{definition}\label{def:SchedulePolicy}\uses{def:Policy, def:SpeedUpFunction, def:RateMatrix}\lean{BscThesisFormalisation.definitions.SchedulePolicy}\notready
+\begin{definition}\label{def:SchedulePolicy}\uses{def:Policy, def:SpeedUpFunction, def:RateMatrix}\lean{SchedulePolicy}\notready
   A \textit{schedule policy} is a function describing for a specific queue $Q$ and a specific speedup function
   $s$ the departurerates per state $n$.
 \end{definition}

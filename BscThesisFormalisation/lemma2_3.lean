@@ -17,6 +17,8 @@ example (a b c d: ℝ) (ha : a ≠ 0) (hb: b ≠ 0) (hc : c ≠ 0) (hd : d ≠ 0
   symm
   exact h
 
+def lemma2_3 : sorry := by sorry
+
 
   -- intro ⟨h₀, h₁⟩
   -- have h''' : a*d = c*b := by

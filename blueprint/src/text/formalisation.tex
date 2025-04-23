@@ -2,12 +2,12 @@
 
 \section{The goal}
 
-\begin{theorem}\label{thm:EQUI_optimal}\lean{BscThesisFormalisation.theorem2_2.EQUIOptimal}
+\begin{theorem}\label{thm:EQUI_optimal}\lean{EQUIOptimal}
     Within our model, assuming jobs are malleable, have exponentially distributed sizes,
 and all follow the same speedup function, $s$, $\mathbb{E}[T]^{EQUI} \leq \mathbb{E}[T]^P$ for any scheduling policy $P$.
 \end{theorem}
 
-\begin{proof}\uses{BscThesisFormalisation.lemma2_1, BscThesisFormalisation.lemma2_3}
+\begin{proof}\uses{lemma2_1, lemma2_3}
 Let $P$ be a mapping policy that processes malleable jobs that can be switched between cores without overhead,
 and currently has $i$ active jobs. In every state, $i$, $P$ must decide (i) how many jobs to run,
 (ii) how to allocate the $k$ P-cores and $l$ E-cores among the $i$ jobs. Hence for some $\vec{\alpha},

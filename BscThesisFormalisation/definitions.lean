@@ -1,6 +1,5 @@
 import Mathlib
 
-
 def coreSpace (n : ℕ) (s : (EuclideanSpace ℝ  (Fin n))) : Set (EuclideanSpace ℝ  (Fin n)) :=
   {x : (EuclideanSpace ℝ  (Fin n)) | ‖x‖ ≤ ‖s‖ ∧ ∀ i, x i ≥ 0}
 

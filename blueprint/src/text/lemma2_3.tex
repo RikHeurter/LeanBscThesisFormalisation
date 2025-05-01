@@ -26,49 +26,370 @@ sides and can prove that $\mu_k \leq \lambda_k$.
 \section{Step-by-step idea}
 
 \subsection{General expression of invariant distribution}
-First we derive the invariant distribution described as the value of the
-invariant distribution at index $0$:
-\begin{lemma}\label{lem:InvariantDistributionValue}\uses{def:SchedulePolicy, def:InvariantDistribution}
-  The value of the invariant distribution $\lambda$ at index $n$ expressed as a scaling factor times the
-  invariant distribution $\lambda$ at index $i$. Given that all departure rates up to and including
-  $n$ are non-zero equals:
-  $$\lambda_i = \frac{\Lambda^{i}}{\prod_{i=1}^n b_i} \lambda_0$$
+
+
+
+We will first describe the invariant distribution in terms of $\lambda_0$ if there are no rates which equal zero:
+\begin{lemma}\label{lem:InvariantDistributionValue}\uses{def:SchedulePolicy}
+  The invariant distribution of a scheduling policy whose rate is never $0$ is of the form:
+  $$\left(\prod_{i=1}^{n} \frac{\Lambda}{a_i}\right)\lambda_0$$
+  at index $n$
 \end{lemma}
 
-\begin{proof}
-  This will be a proof by induction using the invariant distribution definition.
+\begin{proof}\uses{def:InvariantDistribution}
+  This comes down to just using the detailed balance property of the invariant distribution and using induction
+  specifically:
+  \textbf{Base case}: $n = 0$ clearly $\lambda_0 = \lambda_0$.
+  \textbf{Induction case}:
+  The induction hypothesis is that $$\left(\prod_{i=1}^{n-1} \frac{\Lambda}{a_i}\right)\lambda_0$$
+  We now need a case distribution again:
+  $n = 1$ or $n \neq 1$.
+  If $n = 1$ then:
+    $$\Lambda \lambda_0 = a_1 \lambda_1 \implies \lambda_1 = \frac{\Lambda}{a_1} \lambda_0$$ q.e.d.
+  Otherwise:
+  \begin{align*}
+    (\Lambda + a_{n-1})\lambda_{n-1} &= a_n \lambda_n + \Lambda \lambda_{n-2}\\
+    \implies \lambda_n &= \frac{(\Lambda + a_{n-1})\lambda_{n-1} - \Lambda \lambda_{n-2}}{a_n}\\
+    &\overset{IH}{=} \frac{(\Lambda + a_{n-1})\left(\prod_{i=1}^{n-1} \frac{\Lambda}{a_i}\right)\lambda_0 -
+    \Lambda \left(\prod_{i=1}^{n-2} \frac{\Lambda}{a_i}\right)\lambda_0}{a_n}\\
+    &= \left({(\frac{\Lambda}{a_n} + \frac{a_{n-1}}{a_n})\left(\prod_{i=1}^{n-1} \frac{\Lambda}{a_i}\right) -
+    \frac{\Lambda}{a_n} \left(\prod_{i=1}^{n-2} \frac{\Lambda}{a_i}\right)}\right)\lambda_0\\
+    &= \left({(\frac{\Lambda}{a_n} + \frac{a_{n-1}}{a_n})\Lambda^{n-1}\left(\prod_{i=1}^{n-1} \frac{1}{a_i}\right) -
+    \frac{\Lambda}{a_n} \Lambda^{n-2 }\left(\prod_{i=1}^{n-2} \frac{1}{a_i}\right)}\right)\lambda_0\\
+    &= \left({\left(\prod_{i=1}^{n} \frac{\Lambda}{a_i}\right) + \frac{a_{n-1}}{a_n}\Lambda^{n-1}\left(\prod_{i=1}^{n-1} \frac{1}{a_i}\right) -
+    \frac{\Lambda}{a_n} \Lambda^{n-2 }\left(\prod_{i=1}^{n-2} \frac{1}{a_i}\right)}\right)\lambda_0\\
+    &= \left({\left(\prod_{i=1}^{n} \frac{\Lambda}{a_i}\right) + \frac{a_{n-1}}{a_n} \frac{1}{a_{n-1}}\Lambda^{n-1}\left(\prod_{i=1}^{n-2} \frac{1}{a_i}\right) -
+    \frac{1}{a_n} \Lambda^{n-1}\left(\prod_{i=1}^{n-2} \frac{1}{a_i}\right)}\right)\lambda_0\\
+    &= \left({\left(\prod_{i=1}^{n} \frac{\Lambda}{a_i}\right) + \frac{1}{a_n}\Lambda^{n-1}\left(\prod_{i=1}^{n-2} \frac{1}{a_i}\right) -
+    \frac{1}{a_n} \Lambda^{n-1}\left(\prod_{i=1}^{n-2} \frac{1}{a_i}\right)}\right)\lambda_0\\
+    &= \left(\prod_{i=1}^{n} \frac{\Lambda}{a_i}\right)\lambda_0\\
+  \end{align*}
+  q.e.d.
 \end{proof}
+
+Then we can describe how it is normalised.
+\begin{lemma}\label{lem:NormalInvariantDistributionForm}
+  The invariant distribution of a scheduling policy whose rate is never $0$ is of the form:
+  $$\frac{\prod_{i=1}^{n} \frac{\Lambda}{a_i}}{\sum_{n=0}^\infty \prod_{i=1}^{n} \frac{\Lambda}{a_i}}$$
+  at index $n$.
+\end{lemma}
+
+\begin{proof}\uses{lem:InvariantDistributionValue}
+  First we will use the previous theorem to get a general formula of the form:
+  $$\prod_{i=1}^n \frac{\Lambda}{a_i} \lambda_0$$
+  And then we will prove that only this distribution will sum to $1$, e.g. by for example stating
+  if $$\lambda_0 > \frac{1}{\sum_{n=0}^\infty \prod_{i=1}^{n} \frac{\Lambda}{a_i}}$$
+  then it sums to higher than $1$ and if:
+  $$\lambda < \frac{1}{\sum_{n=0}^\infty \prod_{i=1}^{n} \frac{\Lambda}{a_i}}$$
+  than it will be lower than one. This will simply be by using linearity of limits.
+\end{proof}
+% First we derive the invariant distribution described as the value of the
+% invariant distribution at index $0$:
+% \begin{lemma}\label{lem:InvariantDistributionValue}\uses{def:SchedulePolicy, def:InvariantDistribution}
+%   The value of the invariant distribution $\lambda$ at index $n$ expressed as a scaling factor times the
+%   invariant distribution $\lambda$ at index $i$. Given that all departure rates up to and including
+%   $n$ are non-zero equals:
+%   $$\lambda_i = \frac{\Lambda^{i}}{\prod_{i=1}^n b_i} \lambda_0$$
+% \end{lemma}
+
+% \begin{proof}
+%   This will be a proof by induction using the invariant distribution definition.
+% \end{proof}
 
 \subsection{Non-negative distribution values}
 We first will need to show that if there are unreachable states in the queue that the invariant
 distribution is zero there, or more concretely:
-\begin{lemma}\label{lem:UnreachableInvariantDistribution}\uses{def:SchedulePolicy, def:InvariantDistribution}
+\begin{lemma}\label{lem:UnreachableInvariantDistribution}
   If there exists unique $n \in \mathbb{N}$ such that the departure rate is $0$ at state $n$ then $\forall
   i < n$ the invariant distribution has value $0$ for state $i$.
 \end{lemma}
 
-\begin{proof}
+\begin{proof}\uses{lem:InvariantDistributionValue}
   This follows rather quickly from \ref{lem:InvariantDistributionValue}. Simply state the invariant distribution
   definition at index $n-1$ and then simple rewriting yields an equality of the form:
   $$\frac{a}{b+c} = \frac{a}{b}$$
   Where we already know that $c\neq0$ and thus $a=0$ is the only correct option.
 \end{proof}
 
-Then we get the highest such values to allow for nice induction.
-\begin{lemma}\label{lem:MaxUnreachableInvariance}\uses{def:SchedulePolicy, def:InvariantDistribution}
+% Now we also need to show that if there is a zero-valued index in our distribution that then there
+% exists a value with a zero-valued departurerate.
+% \begin{lemma}\label{lem:zeroValuedInvariantDistribution}
+%   Suppose there exists an $n$ in our state space such that $\lambda_n = 0$ then there exists a $k > n$
+%   such that $a_k = 0$.
+% \end{lemma}
+
+% \begin{proof}
+%   First we will show that $\forall i < n$ $\lambda_i = 0$:
+%   We will do a case distinction: Either there exists an $l < n$ such that $a_l = 0$ then by the previous lemma
+%   we know that $\lambda_{l-1} = 0$ Otherwise we note that again we know that:
+
+%   $$(a+b_{n-1})\lambda_{n-1} = a\lambda_{n-2} + b_{n}\lambda_{n}$$
+%   and therefore:
+%   $$(a+b_{n-1})\lambda_{n-1} = a\lambda_{n-2}$$
+%   and thus $$\lambda_{n-2} = \frac{(a+b_{n-1})}{a}\lambda_{n-1}$$
+%   Afterwards we can inductively proof what we want to prove:
+%   $$$$
+% \end{proof}
+
+% Now we also need to show that when we get a value to be $0$ in the invariant distribution that the same recursive definition
+% holds even if it now starts at $n$.
+
+% Now we first need that if we get a zero-valued index, that then also all previous indices are $0$,
+% assuming that this
+% \begin{lemma}\label{lem:StartIndexWhenZero}\uses{def:InvariantDistribution}
+%   Suppose there is an index $i \in \mathbb{N}$ s.t. our invariant distribution is $0$ at $i$, and
+%   suppose our queue is stable, suppose there is no index with $n \leq i$ s.t. the rate is $0$.
+%   Then there exists an $n$ s.t. the rate at index $n$ is $0$.
+% \end{lemma}
+
+Now we also need a lemma which will allow for shifting the general expression of the invariant distribution.
+\begin{lemma}\label{lem:ShiftedInvariantDistributionValue}\uses{def:InvariantDistribution}
+  Suppose we have an index $n$ s.t. we know that $\lambda_i = 0$ for all $i < n$, and furthermore
+  that the departurerate at index $n$ is $0$. And we also know that $\exists m > n \in \mathbb{N}$ s.t
+  $\forall k \in \mathbb{N}$ with $m \geq k > n$
+  the departurerates are greater than $0$ then $\lambda_k$ is of the form:
+  $$\prod_{j={n+1}}^k \frac{\Lambda}{a_j} \lambda_n$$
+\end{lemma}
+
+\begin{proof}
+  This will just be copying the proof from \ref{lem:InvariantDistributionValue}, but this time instead
+  of using the property that at index $0$ we have that our markov chain only goes in one direction,
+  we now plug-in $0$ our zero value of $\lambda_{n-1}$ and $a_n = 0$ (as the departurerate is $0$ at this index).
+\end{proof}
+
+% Then we get the highest such values to allow for nice induction.
+\begin{lemma}\label{lem:MaxUnreachableInvariance}\uses{lem:UnreachableInvariantDistribution}
   If there exists finite $A \subsetneq \mathbb{N}$ such that for all $n \in A$ the departure rate at
-  state $n$ is zero then the invariant distribution has value $0$ at $i < \max(A)$.
+  state $n$ is zero and there exists no $n \notin A$ with departurerate $0$.
+  Then the invariant distribution has value $0$ at $i < \max(A)$.
+\end{lemma}
+\begin{proof}
+  We will need to do induction over $i$.
+  % Specifically we will need to show that if $\min_{n \in A}\{i \leq n\}$ then
+  % the value at $i$ is $0$.
+  % i.e.
+  base case $i = 0$:\\
+  \qquad then use \ref{lem:UnreachableInvariantDistribution}.
+  induction case $i$:\\
+  \qquad we know that the invariant distribution of $i-1$ is zero. If the departurerate of $i$ is not
+  zero i.e. $i \notin A$ then simply apply induction hypothesis. Otherwise apply previous lemma and note that
+  if we let $m = \min{n \in A \colon n > i} - 1$ then we have two cases:
+  \begin{enumerate}
+  \item if $m = i$ then we have:
+  $$(\Lambda+a_i)\lambda_i = \Lambda\lambda_{i-1} + a_{i+1} \lambda_{i+1}$$
+  Using the definitions we find that the RHS is $0$ and since $\Lambda > 0, a_i \geq 0$ we find that
+  $\lambda_i = 0$.
+  \item otherwise we instead find the following set of equations:
+  $$\lambda_m = \prod_{j=i+1}^m \frac{\Lambda}{a_j} \lambda_i,$$
+  from the previous lemma. But also:
+  $$(\Lambda+a_m)\lambda_m = \Lambda \lambda_{m-1} + a_{m+1}\lambda_{m+1}$$
+  and plugging in $a_{m+1} = 0$ we get:
+  $$\lambda_m = \frac{\Lambda}{\Lambda + a_m}\lambda_{m-1}$$
+  Which can again be rewritten using the formula from the previous lemma to:
+  $$\frac{\Lambda}{\Lambda + a_m}\prod_{j=i+1}^{m-1} \frac{\Lambda}{a_j}$$
+  Now we can then substitute $\lambda_m$ in the previous equation to get:
+  \begin{align*}
+  \prod_{j=i+1}^m \frac{\Lambda}{a_j} \lambda_i &= \frac{\Lambda}{\Lambda + a_m}\prod_{j=i+1}^{m-1} \frac{\Lambda}{a_j}\\
+  \frac{\Lambda}{a_m}\prod_{j=i+1}^{m-1} \frac{\Lambda}{a_j} \lambda_i &= \frac{\Lambda}{\Lambda + a_m}\prod_{j=i+1}^{m-1} \frac{\Lambda}{a_j}\\
+  (\frac{\Lambda}{a_m} - \frac{\Lambda}{\Lambda + a_m})\prod_{j=i+1}^{m-1} \frac{\Lambda}{a_j} \lambda_i &= 0\\
+  (\frac{\Lambda}{a_m} - \frac{\Lambda}{\Lambda + a_m}) = 0 &\vee \prod_{j=i+1}^{m-1} \frac{\Lambda}{a_j} \lambda_i = 0\\
+  (\frac{\Lambda(\Lambda + a_m)-\Lambda^2}{a_m(\Lambda + a_m)}) = 0 &\vee \lambda_i = 0\\
+  \Lambda(\Lambda + a_m)-\Lambda^2 = 0 &\vee \lambda_i = 0\\
+  \Lambda(\Lambda + a_m)-\Lambda^2 = 0 &\vee \lambda_i = 0\\
+  \Lambda a_m = 0 &\vee \lambda_i = 0\\
+  \text{contradiction!} &\vee \lambda_i = 0\\
+  \end{align*}
+  Thus $\lambda_i = 0$.
+\end{enumerate}
+\end{proof}
+
+
+\subsection{Calculating the changed invariant distribution}
+
+\begin{lemma}\label{lem:BeforeCutScaled}\uses{lem:InvariantDistributionValue, lem:NormalInvariantDistributionForm}
+  For any two scheduling policies whose departure rates differ at exactly one index $n$, $\forall i \in \mathbb{N}$
+  with $i \leq n - 1$ the invariant distribution at index $i$ differs only a constant $c \in \mathbb{R}$ or $c = \infty$.
+\end{lemma}
+\begin{proof}
+  We will need to do a case distinction: either the rate is $0$ or it is isn't.\\
+  If it is: Apply previous lemma.\\
+  If it isn't: Simply apply \ref{lem:NormalInvariantDistributionForm}
+\end{proof}
+
+\begin{lemma}\label{lem:AfterCutScaled}\uses{def:SchedulePolicy, lem:NormalInvariantDistributionForm}
+  For any two scheduling policies whose departure rates differ at exactly one index $n$, $\forall i \in \mathbb{N}$
+  with $i \geq n$ the invariant distribution differs only a constant $c \in \mathbb{R}$ or $c = \infty$.
 \end{lemma}
 
+\begin{proof}\uses{lem:ShiftedInvariantDistributionValue}
+  We will need to do a case distinction: either the rate is $0$ or it is isn't.\\
+  If it is: Apply the shifted invariant distribution's value lemma.\\
+  If it isn't: Simply apply \ref{lem:NormalInvariantDistributionForm}
+\end{proof}
 
-
-\subsection{Calculating the changed invariant distribution}2
-\begin{lemma}\label{lem:BeforeCutScaled}\uses{def:SchedulePolicy, def:InvariantDistribution}
-  For any two scheduling policies whose departure rates differ at exactly one index $i$, $\forall n \in \mathbb{N}$
-  with $n \leq i - 2$ the invariant distribution differs only a constant $c \in \mathbb{R}$.
+Now we also need to find in which way our $c$ constants have changed. Luckily there is only
+one logical value to choose here.
+\begin{lemma}\label{lem:InvariantDistributionsSmaller}\uses{lem:MaxUnreachableInvariance,
+  lem:ShiftedInvariantDistributionValue, lem:BeforeCutScaled, lem:AfterCutScaled}
+  For any two scheduling policies $P$ and $Q$ whose departure rates differ at one index $n$,
+  and $P's$ departure rate at this index is higher than $Q$'s. Then $Q$'s invariant distribution is
+  a constant $c \leq 1$ smaller than $P$ at the indices $i \leq n - 1$ and $Q$'s invariant distribution is
+  a constant $C \geq 1$ bigger than $P$'s at the indices $i \geq n$.
 \end{lemma}
 
-\begin{lemma}\label{lem:AfterCutScaled}\uses{def:SchedulePolicy, def:InvariantDistribution}
-  For any two scheduling policies whose departure rates differ at exactly one index $i$, $\forall n \in \mathbb{N}$
-  with $n > i $ the invariant distribution differs only a constant $c \in \mathbb{R}$.
-\end{lemma}
+For the proof the general idea of how the indices can be written as the product of the ratios of
+the arrival rates and departure rates is very important.
+\begin{proof}
+  Clearly we first use \ref{lem:BeforeCutScaled, lem:AfterCutScaled}
+  We will need to do a few case distinctions:
+  \begin{enumerate}
+    \item First of all if there exists an index $m > n$ with departure rate $0$. Then
+    both $P$ and $Q$'s invariant distribution is $0$ for all indices $i < m$ by \ref{lem:MaxUnreachableInvariance}. Thus $c = 1$ in the $i < n$ case.
+    Furthermore by \ref{lem:ShiftedInvariantDistributionValue} we find that both invariant distributions
+    are the same and therefore $c = 1$ in both cases.
+    \item Otherwise if $Q$'s departure rate is $0$ at index $n$ then by \ref{lem:UnreachableInvariantDistribution} $Q$'s invariant distribution
+    for all indices $i < n$ equals $0$, whereas $P$'s departurerate is at least non-zero for $i = n-1$ by
+    \ref{lem:ShiftedInvariantDistributionValue} or \ref{lem:InvariantDistributionValue} and using that
+    the sum of an invariant distribution must be $1$. Thus clearly $c=0$ for all $i < n$. Furthermore
+    by the fact that the invariant distribution must sum to $1$ and $P$ has non-zero values we know that
+    $\sum_{i=n}^\infty \lambda_{P,i} = 1 - \sum_{i=0}^{n-1}\lambda_{P,i} < 1$. We see that, because
+    $\sum_{i=n}^\infty \lambda_{P,i} < 1$ and that $\sum_{i=n}^\infty \lambda_{Q,i} = 1$.
+    Now using \ref{lem:ShiftedInvariantDistributionValue} or \ref{lem:InvariantDistributionValue}
+    on $P$ and \ref{lem:ShiftedInvariantDistributionValue} for $Q$ we find that $C = 1/\sum_{i=n}^\infty \lambda_{P,i}$.
+    \item If $Q$'s departure rate is non-zero then we find using \ref{lem:ShiftedInvariantDistributionValue} or \ref{lem:InvariantDistributionValue}
+    for both of them, that after $n$ that our product of $P$ must contain a smaller fraction compared to $\lambda_0$
+    or $\lambda_k$ for some $k < n$. Specifically $P$'s fraction is $\frac{a_{P,n}}{a_{Q,n}}$ times smaller from then on.
+    Since $\sum_{i=0}^\infty \lambda_{P,i} = 1$ we find that:
+    \begin{align}
+      1 &= \sum_{i=0}^{n-1} \lambda_{P,i} + \sum_{i=n}^{\infty} \lambda_{P,i} \nonumber\\
+        &= \frac{\lambda_{P,0}}{\lambda_{Q,0}} \sum_{i=0}^{n-1} \lambda_{Q,i}  + \frac{\lambda_{P,0}}{\lambda_{Q,0}}\frac{a_{Q,n}}{a_{P,n}}\sum_{i=n}^{\infty} \lambda_{Q,i} \nonumber\\
+        &= \left(\sum_{i=0}^{n-1} \lambda_{Q,i}  + \frac{a_{Q,n}}{a_{P,n}}\sum_{i=n}^{\infty} \lambda_{Q,i}\right) \frac{\lambda_{P,0}}{\lambda_{Q,0}} \label{eqn} \hspace{36pt}(1) % Sadly eqn ref is not working correctly :(
+        % &= \left(\sum_{i=0}^{n-1} \lambda_{Q,i}  + \frac{a_{Q,n}}{a_{P,n}}\sum_{i=n}^{\infty} \lambda_{Q,i}\right) \frac{\lambda_{P,0}}{\lambda_{Q,0}}\\
+    \end{align}
+    Now note that:
+    $$\left(\sum_{i=0}^{n-1} \lambda_{Q,i}  + \frac{a_{Q,n}}{a_{P,n}}\sum_{i=n}^{\infty} \lambda_{Q,i}\right) < 1$$
+    by the fact that
+    $$\sum_{i=0}^{n-1} \lambda_{Q,i}  + \sum_{i=n}^{\infty} \lambda_{Q,i} = 1$$
+    and
+    $$\frac{a_{Q,n}}{a_{P,n}} < 1$$
+    (thus using concavity of summation :D).
+    Thus $\frac{\lambda_{P,0}}{\lambda_{Q,0}} > 1 \implies \lambda_{P,0} > \lambda_{Q,0}$, and therefore
+    $c < 1$ for $i \leq n - 1$ and $C > 1$ for $i \geq n$, (because it must still sum to $1$).
+    Furthermore $c$ is of the form:
+    $$1 + (\frac{a_{Q,n}}{a_{P,n}}-1)\sum_{i=n}^{\infty}\lambda_{Q,i}$$
+    by:
+    \begin{align*}
+      \frac{\lambda_{P,0}}{\lambda_{Q,0}} &= \frac{1}{\sum_{i=0}^{n-1}\lambda_{Q,i} + \frac{a_{Q,n}}{a_{P,n}} \sum_{i=n}^\infty \lambda_{Q,i}}\\
+      \iff \lambda_{Q,0} &= \left(\sum_{i=0}^{n-1}\lambda_{Q,i} + \frac{a_{Q,n}}{a_{P,n}} \sum_{i=n}^\infty \lambda_{Q,i}\right)\lambda_{P,0}\\
+      &=\left(1-\sum_{i=n}^{\infty}\lambda_{Q,i} + \frac{a_{Q,n}}{a_{P,n}} \sum_{i=n}^\infty \lambda_{Q,i}\right)\lambda_{P,0}\\
+      &=\left(1 + (\frac{a_{Q,n}}{a_{P,n}}-1) \sum_{i=n}^\infty \lambda_{Q,i}\right)\lambda_{P,0}\\
+    \end{align*}
+    And $C$ is of the form:
+    $$C = \frac{a_{P,n}}{a_{Q,n}}c = 1 + (\frac{a_{P,n}}{a_{Q,n}}-1) \sum_{i=0}^{n-1}\lambda_{Q,i}$$
+    this follows from:
+    $$\sum_{i=n}^\infty\lambda_{Q,i} = \frac{a_{P,n}}{a_{Q,n}}\frac{\lambda_{Q,0}}{\lambda_{P,0}}\sum_{i=n}^\infty{\lambda_{P,i}}$$
+    again by \ref{lem:ShiftedInvariantDistributionValue} or \ref{lem:InvariantDistributionValue}.
+    Plugging in $\lambda_{Q,0} = c \lambda_{P,0}$ yields:
+    $$\frac{a_{P,n}}{a_{Q,n}}\frac{c\lambda_{P,0}}{\lambda_{P,0}}\sum_{i=n}^\infty{\lambda_{P,i}}$$
+    And therefore we clearly attain:
+    \begin{align*}
+      C &= \frac{a_{P,n}}{a_{Q,n}} c \\
+        &= \frac{a_{P,n}}{a_{Q,n}}\left(1 + (\frac{a_{Q,0}}{a_{P,0}}-1)\sum_{i=n}^{\infty}\lambda_{Q,i}\right)\\
+        &= \frac{a_{P,n}}{a_{Q,n}}\left(1 + (\frac{a_{Q,0}}{a_{P,0}}-1)(1-\sum_{i=0}^{n-1}\lambda_{Q,i})\right)\\
+        &= \frac{a_{P,n}}{a_{Q,n}} + (1-\frac{a_{P,n}}{a_{Q,n}})(1-\sum_{i=0}^{n-1}\lambda_{Q,i})\\
+        &= \frac{a_{P,n}}{a_{Q,n}} + 1 - \frac{a_{P,n}}{a_{Q,n}} - (1-\frac{a_{P,n}}{a_{Q,n}})\sum_{i=0}^{n-1}\lambda_{Q,i}\\
+        &= 1 - (1-\frac{a_{P,n}}{a_{Q,n}})\sum_{i=0}^{n-1}\lambda_{Q,i}\\
+        &= 1 + (\frac{a_{P,n}}{a_{Q,n}}-1)\sum_{i=0}^{n-1}\lambda_{Q,i}
+    \end{align*}
+    % Now because we have directly computed: $$\frac{\lambda_{P,0}}{\lambda_{Q,0}} = \frac{1}{c}$$
+    % We can conclude using \eqref{eqn} that $C = \frac{a_{Q,n}}{a_{P,n}} c$
+    % And all $i$ must be by \ref{lem:ShiftedInvariantDistributionValue} or \ref{lem:InvariantDistributionValue} writen as:
+    % $$\lambda_{\_, k} = \prod_{i=m+1}^k \frac{\Lambda}{a_{\_,i}} \lambda_{m}$$
+    % For some $m < n$ and therefore:
+    % $$C = \frac{a_{}}{}$$
+  \end{enumerate}
+\end{proof}
+
+\begin{corollary}\label{cor:NumberInTheSystemSmaller}\uses{lem:InvariantDistributionsSmaller}
+  In the previous situation $\mathbb{E}[N]^P \leq \mathbb{E}[N]^Q$.
+\end{corollary}
+
+\begin{proof}
+  Because $c \leq 1$ for $i < n$ and $C \geq 1$ for $i \geq n$ we find that:
+  $$
+   \sum_{i=0}^{n-1} i \lambda_{Q,i} + \sum_{i=n}^\infty i \lambda_{Q,i} =
+   c \cdot \sum_{i=0}^{n-1} i \lambda_{P,i} + C \cdot \sum_{i=n}^\infty i \lambda_{P,i}
+  $$
+  We will use the same case distinctions again:
+  \begin{enumerate}
+   \item Clearly if $c = C = 1$ then it is true;
+   \item If $Q$'s rate at index $n$ is $0$ then we have that the $c$ term yields $0$
+   and because $C = \frac{1}{\sum_{i=n}^{\infty}\lambda_{P,i}}$, we find that:
+   \begin{align*}
+     C \cdot \sum_{i=n}^\infty i \lambda_{P,i} &= \frac{1}{\sum_{i=n}^{\infty}\lambda_{P,i}}\sum_{i=n}^\infty i \lambda_{P,i}\\
+     &= (\frac{1}{\sum_{i=n}^{\infty}\lambda_{P,i}} - 1 + 1)\sum_{i=n}^\infty i \lambda_{P,i}\\
+     &= (\frac{1}{\sum_{i=n}^{\infty}\lambda_{P,i}} - 1)\sum_{i=n}^\infty i \lambda_{P,i} + \sum_{i=n}^\infty i \lambda_{P,i}\\
+     &\geq n(\frac{1}{\sum_{i=n}^{\infty}\lambda_{P,i}} - 1)\sum_{i=n}^\infty \lambda_{P,i} + \sum_{i=n}^\infty i \lambda_{P,i}\\
+     &= n(1 - \sum_{i=n}^\infty \lambda_{P,i}) + \sum_{i=n}^\infty i \lambda_{P,i}\\
+     &= n(1 - (1-\sum_{i=0}^{n-1} \lambda_{P,i})) + \sum_{i=n}^\infty i \lambda_{P,i}\\
+     &= n\sum_{i=0}^{n-1} \lambda_{P,i} + \sum_{i=n}^\infty i \lambda_{P,i}\\
+     &\geq \sum_{i=0}^{n-1}i \lambda_{P,i} + \sum_{i=n}^\infty i \lambda_{P,i}
+    %  &= \frac{1-\sum_{i=0}^{n-1}\lambda_{P,i}}{\sum_{i=0}^{n-1}\lambda_{P,i}}\sum_{i=n}^\infty i \lambda_{P,i}  + \sum_{i=n}^\infty i \lambda_{P,i}\\
+    % %  &\geq n\frac{1-\sum_{i=0}^{n-1}\lambda_{P,i}}{\sum_{i=0}^{n-1}\lambda_{P,i}}\sum_{i=n}^\infty \lambda_{P,i}  + \sum_{i=n}^\infty i \lambda_{P,i}\\
+    %  &= \frac{\sum_{i=n}^{\infty}\lambda_{P,i}}{\sum_{i=0}^{n-1}\lambda_{P,i}}\sum_{i=n}^\infty i\lambda_{P,i}  + \sum_{i=n}^\infty i \lambda_{P,i}\\
+   \end{align*}
+   \item If both $Q$'s rate at index $n$ is not $0$ then we have:
+   \begin{align*}
+    &c \cdot \sum_{i=0}^{n-1} i \lambda_{P,i} + C \cdot \sum_{i=n}^\infty i \lambda_{P,i} \\
+    &= \left(1 + (\frac{a_{Q,n}}{a_{P,n}}-1)\sum_{i=n}^{\infty}\lambda_{Q,i}\right)  \sum_{i=0}^{n-1} i \lambda_{P,i} + \left(1 + (\frac{a_{P,n}}{a_{Q,n}}-1) \sum_{i=0}^{n-1}\lambda_{Q,i}\right) \sum_{i=n}^\infty i \lambda_{P,i}
+    % &\geq \sum_{i=0}^{n-1} i \lambda_{P,i} + \sum_{i=n}^\infty i \lambda_{P,i} \iff
+   \end{align*}
+   It is evident that this expression is greater than or equal to $$\sum_{i=0}^{n-1}i \lambda_{P,i} + \sum_{i=n}^\infty i \lambda_{P,i}$$
+   if and only if:
+   $$(\frac{a_{Q,n}}{a_{P,n}}-1)\left(\sum_{i=n}^{\infty}\lambda_{Q,i}\right)\left(\sum_{i=0}^{n-1} i \lambda_{P,i}\right) + (\frac{a_{P,n}}{a_{Q,n}}-1) \left(\sum_{i=0}^{n-1}\lambda_{Q,i}\right)\left(\sum_{i=n}^\infty i \lambda_{P,i}\right)$$
+   Thus we will prove this instead:
+   \begin{align*}
+    &(\frac{a_{Q,n}}{a_{P,n}}-1)\left(\sum_{i=n}^{\infty}\lambda_{Q,i}\right)\left(\sum_{i=0}^{n-1} i \lambda_{P,i}\right) + (\frac{a_{P,n}}{a_{Q,n}}-1) \left(\sum_{i=0}^{n-1}\lambda_{Q,i}\right)\left(\sum_{i=n}^\infty i \lambda_{P,i}\right) \\
+    &= (\frac{a_{Q,n} - a_{P,n}}{a_{P,n}})\left(\sum_{i=n}^{\infty}\lambda_{Q,i}\right)\left(\sum_{i=0}^{n-1} i \lambda_{P,i}\right) + (\frac{a_{P,n} - a_{Q,n}}{a_{Q,n}}) \left(\sum_{i=0}^{n-1}\lambda_{Q,i}\right)\left(\sum_{i=n}^\infty i \lambda_{P,i}\right) \\
+    &= (\frac{a_{Q,n}^2 - a_{P,n}a_{Q,n}}{a_{P,n}a_{Q,n}})\left(\sum_{i=n}^{\infty}\lambda_{Q,i}\right)\left(\sum_{i=0}^{n-1} i \lambda_{P,i}\right) + (\frac{a_{P,n}^2 - a_{P,n}a_{Q,n}}{a_{P,n}a_{Q,n}}) \left(\sum_{i=0}^{n-1}\lambda_{Q,i}\right)\left(\sum_{i=n}^\infty i \lambda_{P,i}\right)
+   \end{align*}
+   Again this is only greater than or equal to $0$ if $a_{P,n}a_{Q,n}$ times the expression is zero,
+   thus we can prove the same for the simplified expression:
+   \begin{align*}
+    &(a_{Q,n}^2 - a_{P,n}a_{Q,n})\left(\sum_{i=n}^{\infty}\lambda_{Q,i}\right)\left(\sum_{i=0}^{n-1} i \lambda_{P,i}\right) + (a_{P,n}^2 - a_{P,n}a_{Q,n}) \left(\sum_{i=0}^{n-1}\lambda_{Q,i}\right)\left(\sum_{i=n}^\infty i \lambda_{P,i}\right)\\
+    &\geq (a_{Q,n}^2 - a_{P,n}a_{Q,n})\left(C\sum_{i=n}^{\infty}\lambda_{P,i}\right)\left(\sum_{i=0}^{n-1} i \lambda_{P,i}\right) + (a_{P,n}^2 - a_{P,n}a_{Q,n}) \left(\sum_{i=0}^{n-1}\lambda_{Q,i}\right)\left(\sum_{i=n}^\infty i \lambda_{P,i}\right)\\
+    &= (a_{Q,n}^2 - a_{P,n}a_{Q,n})\left(\frac{a_{P,n}}{a_{Q,n}}c\sum_{i=n}^{\infty}\lambda_{P,i}\right)\left(\sum_{i=0}^{n-1} i \lambda_{P,i}\right) + (a_{P,n}^2 - a_{P,n}a_{Q,n}) \left(\sum_{i=0}^{n-1}\lambda_{Q,i}\right)\left(\sum_{i=n}^\infty i \lambda_{P,i}\right)\\
+    &= (a_{P,n}a_{Q,n} - a_{P,n}^2)\left(\sum_{i=n}^{\infty}\lambda_{P,i}\right)\left(c\sum_{i=0}^{n-1} i \lambda_{P,i}\right) + (a_{P,n}^2 - a_{P,n}a_{Q,n}) \left(\sum_{i=0}^{n-1}\lambda_{Q,i}\right)\left(\sum_{i=n}^\infty i \lambda_{P,i}\right)\\
+    &= -(a_{P,n}^2- a_{P,n}a_{Q,n})\left(\sum_{i=n}^{\infty}\lambda_{P,i}\right)\left(\sum_{i=0}^{n-1} i \lambda_{Q,i}\right) + (a_{P,n}^2 - a_{P,n}a_{Q,n}) \left(\sum_{i=0}^{n-1}\lambda_{Q,i}\right)\left(\sum_{i=n}^\infty i \lambda_{P,i}\right)\\
+   \end{align*}
+   Now notice that $-(a_{P,n}^2- a_{P,n}a_{Q,n}) \leq 0$ by $a_{P,n} \geq a_{Q,n}$ and thus we can
+   ............ to $n-1$ whereas the right hand term can instead be changed to $n$ i.e. we get:
+   \begin{align*}
+    &-(a_{P,n}^2- a_{P,n}a_{Q,n})\left(\sum_{i=n}^{\infty}\lambda_{P,i}\right)\left(\sum_{i=0}^{n-1} i \lambda_{Q,i}\right) + (a_{P,n}^2 - a_{P,n}a_{Q,n}) \left(\sum_{i=0}^{n-1}\lambda_{Q,i}\right)\left(\sum_{i=n}^\infty i \lambda_{P,i}\right)\\
+    &\geq -(a_{P,n}^2- a_{P,n}a_{Q,n})\left(\sum_{i=n}^{\infty}\lambda_{P,i}\right)\left((n-1)\sum_{i=0}^{n-1} \lambda_{Q,i}\right) + (a_{P,n}^2 - a_{P,n}a_{Q,n}) \left(\sum_{i=0}^{n-1}\lambda_{Q,i}\right)\left(n\sum_{i=n}^\infty \lambda_{P,i}\right)\\
+    &= -(n-1)(a_{P,n}^2- a_{P,n}a_{Q,n})\left(\sum_{i=n}^{\infty}\lambda_{P,i}\right)\left(\sum_{i=0}^{n-1} \lambda_{Q,i}\right) + n(a_{P,n}^2 - a_{P,n}a_{Q,n}) \left(\sum_{i=0}^{n-1}\lambda_{Q,i}\right)\left(\sum_{i=n}^\infty \lambda_{P,i}\right)\\
+    &= (a_{P,n}^2- a_{P,n}a_{Q,n})\left(\sum_{i=n}^{\infty}\lambda_{P,i}\right)\left(\sum_{i=0}^{n-1} \lambda_{Q,i}\right)
+   \end{align*}
+   Now note that $(a_{P,n}^2- a_{P,n}a_{Q,n}) \geq 0$, $\sum_{i=n}^{\infty}\lambda_{P,i} \geq 0$,
+   $\sum_{i=0}^{n-1} \lambda_{Q,i} \geq 0$ and therefore likewise their product is greater than or
+   equal to zero, which completes the proof.
+  \end{enumerate}
+
+\end{proof}
+
+\subsection{Our goal}
+Now we have everything we need to actually prove our theorem.
+\begin{theorem}\label{thm:theorem2.3}\uses{cor:NumberInTheSystemSmaller}
+  If we have two scheduling policies $P$ and $Q$. And $P's$ departurerates are always higher than
+  or equal to $Q$'s and let $Q$ only have finite zero-valued departure rates. Then: $$\mathbb{E}[N]^{P} \leq \mathbb{E}[N]^{Q}.$$
+\end{theorem}
+
+\begin{proof}
+  We will create a set of intermediary policies between $P$ and $Q$ to prove what we wanted to prove.
+  Let $n \in \mathbb{N}$ and let $R_n$ denote the policy whose departure rate at index $j \leq n$ equals
+  $P$'s departure rate and at index $j > n$ $Q$'s. Then using induction on $n$ we find that:
+  $\mathbb{E}[N]^{Q} \geq \mathbb{E}[N]^{R_i}$. Furthermore using induction on $n$ we find that
+  $\mathbb{E}[N]^{R_n}$ is monotonically increasing. Lastly after cleaning up the proof of \ref{cor:NumberInTheSystemSmaller}
+  we actually find that our $$\mathbb{E}[N]^P = \lim_{n \to \infty} \mathbb{E}[N]^{R_i}$$
+\end{proof}
+% \begin{lemma}\label{lem:}

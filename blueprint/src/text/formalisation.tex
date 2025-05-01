@@ -7,7 +7,7 @@
 and all follow the same speedup function, $s$, $\mathbb{E}[T]^{EQUI} \leq \mathbb{E}[T]^P$ for any scheduling policy $P$.
 \end{theorem}
 
-\begin{proof}\uses{lemma2_1, lemma2_3}
+\begin{proof}\uses{lem:lemma2.1, thm:theorem2.3, def:MeanResponseTime}
 Let $P$ be a mapping policy that processes malleable jobs that can be switched between cores without overhead,
 and currently has $i$ active jobs. In every state, $i$, $P$ must decide (i) how many jobs to run,
 (ii) how to allocate the $k$ P-cores and $l$ E-cores among the $i$ jobs. Hence for some $\vec{\alpha},

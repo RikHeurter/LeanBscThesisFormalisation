@@ -5,6 +5,7 @@ Sublinear
 SpeedUpFunction
 RateMatrix
 InvariantDistribution
+MRTSequence
 MeanResponseTimePolicy
 Policy
 SchedulePolicy

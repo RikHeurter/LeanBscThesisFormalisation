@@ -17,13 +17,13 @@ we require.
 The Mathlib library already defines concavity more generally. We redefine our own instance to make
 it easier to work with:
 \begin{definition}\label{def:myConcave}\uses{def:corespace}\lean{myConcave}\leanok
-  A function $f$ is said to be \textit{concave} on $c \in \mathbb{R^n}$ the core vector if $\forall x, y \in C_s$
+  A function $f$ is said to be \textit{concave} on $c \in \mathbb{R^n}$ the core vector if $\forall x, y \in C_c$
   and all $a, b \in \mathbb{R}$ with the property that $a + b = 1$ implies that:
   $$a \cdot f(x) + b \cdot f(y) \leq f(a \cdot x + b \cdot y)$$
 \end{definition}
 
 \begin{definition}\label{def:Sublinear}\uses{def:coreSpace}\lean{Sublinear}\leanok
-  A function $f$ is said to be \textit{sublinear} on $C_c$, with $c$ the core vector if $\forall x \in C_S$
+  A function $f$ is said to be \textit{sublinear} on $C_c$, with $c$ the core vector if $\forall x \in C_c$
   $||f(x)|| \leq ||x||$.
 \end{definition}
 
@@ -48,7 +48,7 @@ Since our queue will be one-dimensional of infinite size anyway we define our Ra
 
 Now the invariant distribution of our queue is simply:
 \begin{definition}\label{def:InvariantDistribution}\uses{def:RateMatrix}\lean{InvariantDistribution}\leanok
-    A infinite-dimensional vector lambda described by a function $\mathbb{N} \to \mathbb{R}$ is said
+    An infinite-dimensional vector lambda described by a function $\mathbb{N} \to \mathbb{R}$ is said
     to be an \textit{invariant distribution} for a queue $Q$ if the following holds:\
     \begin{enumerate}
         \item $\forall n \in \mathbb{N}, n \neq 0, \lambda(n-1) * Q(n-1,n) + \lambda(n+1) * Q(n+1,n) = \lambda(n)$
@@ -57,15 +57,15 @@ Now the invariant distribution of our queue is simply:
     \end{enumerate}
 \end{definition}
 
-And then the mean number in the system is:
-\begin{definition}\label{def:MeanLambda}\uses{def:InvariantDistribution}\lean{MRTSequence}\leanok
-    The \textit{mean number in the system} is defined as the following equation:
-    $$\mathbb{E}[\lambda] = \sum_{n=0}^\infty \lambda(n)*n$$
-\end{definition}
+% And then the mean number in the system is:
+% \begin{definition}\label{def:MeanLambda}\uses{def:InvariantDistribution}\lean{MeanResponseTime}\leanok
+%     The \textit{mean number in the system} is defined as the following equation:
+%     $$\mathbb{E}[\lambda] = \sum_{n=0}^\infty \lambda(n)\cdot n$$
+% \end{definition}
 
 We will define the mean response time of our queue directly dependent on Little's law, since the only
 way we evaluate our mean response time is by invoking Little's law anyway.
-\begin{definition}\label{def:MeanResponseTime}\uses{def:MeanLambda}\lean{MeanResponseTimePolicy}\leanok
+\begin{definition}\label{def:MeanResponseTime}\uses{def:InvariantDistribution}\lean{MeanResponseTime}\leanok
     The \textit{mean response time}, denoted as $\mathbb{E}[T]$ of a queue is defined to be the mean
     number in the system / mean throughput i.e. (mean throughput is equal to $\Lambda$ since this doesn't vary
     per state):
@@ -86,7 +86,7 @@ Now we have everything we need to state what a policy is. For this we first defi
 \end{definition}
 
 Now we can define the magnum opus of our actual definitions: the schedule policy.
-\begin{definition}\label{def:SchedulePolicy}\uses{def:Policy, def:SpeedUpFunction, def:RateMatrix}\lean{SchedulePolicy}\notready
+\begin{definition}\label{def:SchedulePolicy}\uses{def:Policy, def:SpeedUpFunction, def:RateMatrix}\lean{SchedulePolicy}\leanok
   A \textit{schedule policy} is a function describing for a specific queue $Q$ and a specific speedup function
   $s$ the departurerates per state $n$.
 \end{definition}

@@ -1,17 +1,25 @@
 import Mathlib
 
-def coreSpace (n : ℕ) (s : (EuclideanSpace ℝ  (Fin n))) : Set (EuclideanSpace ℝ  (Fin n)) :=
-  {x : (EuclideanSpace ℝ  (Fin n)) | ‖x‖ ≤ ‖s‖ ∧ ∀ i, x i ≥ 0}
+-- TODO: change this everywhere.
+-- TODO: Cleanup the code capitalisation everywhere you go, always take the weather with you.
+local notation "ℝ(" n ")" => (PiLp 1 fun (x : (Fin n)) => ℝ) -- by: https://leanprover.zulipchat.com/#narrow/channel/113489-new-members/topic/.60parameter.60.20in.20Lean.204.3F/near/479123468
+local notation "ℕ(" n ")" => (PiLp 1 fun (x : (Fin n)) => ℕ)
 
-def myConcave (n : ℕ) (s : EuclideanSpace ℝ  (Fin n)) (f : (EuclideanSpace ℝ  (Fin n)) → ℝ) : Prop :=
-  ∀ x, x ∈ (coreSpace n s) → ∀ y, y ∈ (coreSpace n s) → ∀ ⦃a b : ℝ⦄, 0 ≤ a → 0 ≤ b → a + b = 1 →
+def coreSpace (n : ℕ) (c : ℕ(n)) : Set (ℝ(n)) :=
+  {x : ℝ(n)  | ∀ {i : Fin n}, x i ≤ c i ∧ ∀ i, x i ≥ 0}
+
+def myConcave (n : ℕ) (c : ℕ(n)) (f : ℝ(n) → ℝ) : Prop :=
+  ∀ x, x ∈ (coreSpace n c) → ∀ y, y ∈ (coreSpace n c) → ∀ {a b : ℝ}, 0 ≤ a → 0 ≤ b → a + b = 1 →
     a • f x + b • f y ≤ f (a • x + b • y)
 
-def Sublinear (n : ℕ) (f : (EuclideanSpace ℝ  (Fin n)) → ℝ) : Prop :=
-  ∀ x, ‖x‖ ≥ 0 → ‖f x‖ ≤ ‖x‖
+def Sublinear (n : ℕ) (speedvec: ℝ(n)) (f : ℝ(n) → ℝ) : Prop :=
+  (∀ x, ‖x‖ ≥ 0 → ‖f x‖ ≤ dotProduct speedvec x) ∧ (∃ c > 0, ∀ x, ‖x‖ ≥ 0 → ‖f x‖ ≤ c)
 
-def SpeedUpFunction (n : ℕ ) (s : EuclideanSpace ℝ  (Fin n)) (f : (EuclideanSpace ℝ  (Fin n)) → ℝ) : Prop :=
-  Sublinear n f ∧ myConcave n s f
+def nonDecreasing (n : ℕ) (f : ℝ(n) → ℝ) : Prop :=
+  ∀x, ‖x‖ ≥ 0 → ∀ε, ‖ε‖ > 0 → f x ≤ f (x + ε)
+
+def SpeedUpFunction (n : ℕ ) (speedvec: ℝ(n)) (c : ℕ(n)) (f : ℝ(n) → ℝ) : Prop :=
+  Sublinear n speedvec f ∧ myConcave n c f ∧ nonDecreasing n f
 
 structure RateMatrix where
   Q : ℕ → ℕ → ℝ
@@ -22,31 +30,38 @@ structure RateMatrix where
 --                           (p: ℕ → ℕ → (EuclideanSpace ℝ  (Fin n))) (j : Fin n)
 -- #check (∑i ∈ (Finset.range (distributionpolicy n)), (p n i)) j
 
-def Policy (n : ℕ ) (s : EuclideanSpace ℝ  (Fin n)) (distributionpolicy: ℕ → ℕ)
-                          (p: ℕ → ℕ → (EuclideanSpace ℝ  (Fin n))) : Prop :=
+def Policy (n : ℕ) (c : ℕ(n)) (distributionpolicy: ℕ → ℕ)
+                          (p: ℕ → ℕ → (ℝ(n))) : Prop :=
   ∀ n, distributionpolicy n ≤ n
     ∧ distributionpolicy n ≥ 0
-    ∧ (∀j, (∑i ∈ (Finset.range (distributionpolicy n)), (p n i)) j ≤ s j)
+    ∧ (∀j, (∑i ∈ (Finset.range (distributionpolicy n)), (p n i)) j ≤ c j)
     ∧ (∀j, ∀ i, (p n i) j ≥ 0)
 
 structure SchedulePolicy where
   dim : ℕ
   μ : ℝ
-  -- s : Set (EuclideanSpace ℝ  (Fin dim))
-  s : EuclideanSpace ℝ  (Fin dim)
-  speedupF : (EuclideanSpace ℝ  (Fin dim)) → ℝ
+  cN : ℕ(dim)
+  cR : ℝ(dim)
+  speedvector : ℝ(dim)
+  speedupF : (ℝ(dim)) → ℝ
   distributionpolicy: ℕ → ℕ
-  policy: ℕ → ℕ → (EuclideanSpace ℝ (Fin dim))
+  policy: ℕ → ℕ → (ℝ(dim))
   departurerates : ℕ → ℝ
-  speedupF_is_speedup : SpeedUpFunction dim s speedupF
-  ispolicy : Policy dim s distributionpolicy policy
+  speedupF_is_speedup : SpeedUpFunction dim speedvector cN speedupF
+  ispolicy : Policy dim cN distributionpolicy policy
   departurerates_uses_speedup: ∀ n, μ * ∑i ∈ (Finset.range (distributionpolicy n)), speedupF (policy n i) = (departurerates n)
+  cR_eq_cN : ∀ i, cN i = cR i
+  -- departurerates_contant_after_n: ∀n : ℕ, n ≥ ⌈‖cR‖⌉₊ → departurerates n = departurerates ⌈‖cR‖⌉₊
   -- TODO: require that after n becomes greater than ||c||_1 that it actually is indeed the same constantly.
   -- Otherwise is stable is way more difficult to implement.
 
+-- #check Function.comp
+-- #check Norm.norm.
 
 def IsStable (P : SchedulePolicy) (Λ : ℝ) : Prop :=
-  (⨆ (z : ℕ), P.departurerates z)/Λ < 1
+  ∃c : ℝ, c > 0 → ∃N : ℕ, ∀ n : ℕ, n ≥ N → (P.departurerates n)/Λ ≤ (1 - c)
+  -- (P.departurerates ⌈‖P.cR‖⌉₊)/Λ < 1
+  -- (⨆ (z : ℕ), P.departurerates z)/Λ < 1
 
 structure queue where
   state_space : ℕ
@@ -57,33 +72,38 @@ structure queue where
   policy_mu_eq_queue_mu : P.μ = μ
   stable_policy : IsStable P Λ
 
-def SumSeq (n : ℕ) (lambda : ℕ → ℝ) : ℝ :=
-  ∑ i∈ (Finset.range n), (lambda (i+1))
+-- #check ∑'
 
-def AllPositive (lambda : ℕ → ℝ) : Prop :=
-  ∀ n, 0 ≤ lambda n
+-- def SumSeq (n : ℕ) (lambda : ℕ → ℝ) : ℝ :=
+--   ∑ i∈ (Finset.range n), (lambda (i+1))
+
+-- def AllPositive (lambda : ℕ → ℝ) : Prop :=
+--   ∀ n, 0 ≤ lambda n
 
 -- https://leanprover-community.github.io/mathlib_docs/algebra/geom_sum.html
-def NormalizedVec (lambda : ℕ → ℝ) : Prop :=
-  ∀ ε > 0, ∃ N, ∀ n ≥ N, |(SumSeq n lambda) - 1| < ε
+-- def NormalizedVec (lambda : ℕ → ℝ) : Prop :=
+--   ∀ ε > 0, ∃ N, ∀ n ≥ N, |(SumSeq n lambda) - 1| < ε
 
 def InvariantDistribution (Que : queue) (lambda : ℕ → ℝ) : Prop :=
   ∀ n, n ≠ 0 → (lambda (n-1)) * (Que.Q.Q (n-1) n) + (lambda (n+1)) * (Que.Q.Q (n+1) n) = lambda n
   ∧ (lambda 1) * (Que.Q.Q 1 0) = lambda 0
-  ∧ NormalizedVec lambda
+  ∧ ∑' i, lambda i = 1
 
+noncomputable
+def MeanResponseTime (lambda : ℕ → ℝ) (Q : queue) (_: InvariantDistribution Q lambda) : ℝ :=
+    (∑' i, lambda i * i)/Q.Λ
 -- #check Σ'
 
 
 -- Definition of Mean Response Time using Little's law, because I didn't want
 -- to go into the actual case-specific definition.
-noncomputable
-def MRTSequence (n : ℕ) (Que : queue) (lambda : ℕ → ℝ) (_ : InvariantDistribution Que lambda) : ℝ :=
-  (∑ i ∈ (Finset.range n), lambda i)/Que.Λ
+-- noncomputable
+-- def MRTSequence (n : ℕ) (Que : queue) (lambda : ℕ → ℝ) (_ : InvariantDistribution Que lambda) : ℝ :=
+--   (∑ i ∈ (Finset.range n), lambda i)/Que.Λ
 
-noncomputable
-def isMRT (Que : queue) (lambda : ℕ → ℝ) (h : InvariantDistribution Que lambda) (L : ℝ) : Prop :=
-  ∀ε > 0, ∃ N, ∀ n ≥ N, |(MRTSequence n Que lambda h) - L| < ε
+-- noncomputable
+-- def isMRT (Que : queue) (lambda : ℕ → ℝ) (h : InvariantDistribution Que lambda) (L : ℝ) : Prop :=
+--   ∀ε > 0, ∃ N, ∀ n ≥ N, |(MRTSequence n Que lambda h) - L| < ε
 
 
 structure MeanResponseTimePolicy where
@@ -91,4 +111,4 @@ structure MeanResponseTimePolicy where
   lambda : ℕ → ℝ
   Q : queue
   isID : InvariantDistribution Q lambda
-  MRT : isMRT Q lambda isID L
+  isMRT : MeanResponseTime lambda Q isID = L

@@ -1,9 +1,12 @@
 import Mathlib
 import BscThesisFormalisation.definitions
 
-theorem lemma2_1 (n : ℕ) (c : EuclideanSpace ℝ  (Fin n)) (s : (EuclideanSpace ℝ  (Fin n)) → ℝ)
-        (h : SpeedUpFunction n c s) : ∀ i, i ≠ 0 → i < ‖c‖ → ∃ε > 0, i * s ((1/i)•c) < (i+ε) * s ((1/(i+ε))•c)
-        ∧ ∀ i, i ≠ 0 → i ≥ ‖c‖ → ∀ε > 0, i * s ((1/i)•c) ≤ (i+ε) * s ((1/(i+ε))•c) := by
+local notation "ℝ(" n ")" => (PiLp 1 fun (x : (Fin n)) => ℝ) -- by: https://leanprover.zulipchat.com/#narrow/channel/113489-new-members/topic/.60parameter.60.20in.20Lean.204.3F/near/479123468
+local notation "ℕ(" n ")" => (PiLp 1 fun (x : (Fin n)) => ℕ)
+
+theorem lemma2_1 (n : ℕ) (speedvec : ℝ(n)) (cN : ℕ(n)) (cR : ℝ(n)) (s : ℝ(n) → ℝ)
+  (h : SpeedUpFunction n speedvec cN s) (h₂ : ∀ i, cN i = cR i): ∀ i, i ≠ 0 → i < ‖cR‖ → ∃ε > 0, i * s ((1/i)•cR) < (i+ε) * s ((1/(i+ε))•cR)
+  ∧ ∀ i, i ≠ 0 → i ≥ ‖cR‖ → ∀ε > 0, i * s ((1/i)•cR) ≤ (i+ε) * s ((1/(i+ε))•cR) := by
   sorry
 -- theorem NonDecreasingSpeedup (n : ℕ) (c : EuclideanSpace ℝ  (Fin n)) (s : (EuclideanSpace ℝ  (Fin n)) → ℝ)
 --         (h : SpeedUpFunction n c s) : ∀ i, i ≠ 0 → i ≥ ‖c‖ → ∀ε > 0, i * s ((1/i)•c) ≤ (i+ε) * s ((1/(i+ε))•c) := by

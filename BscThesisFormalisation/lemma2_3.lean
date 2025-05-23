@@ -23,6 +23,19 @@ theorem lemma2_3 (P : RateMatrix) (Q : RateMatrix) (lambdaP : ℕ → ℝ) (lamb
   (InvariantDistribution P lambdaP ∧ InvariantDistribution Q lambdaQ)) →
   MeanNumberInSystem P lambdaP h.right.left ≥ MeanNumberInSystem Q lambdaQ h.right.right := by sorry
 
+-- example (a b c : ℝ ) (h: b ≠ 0) (h₀ : a ≠ 0) (h₁ : c ≠ 0): a * b = c ↔ a = c/b := by
+--   constructor
+--   · intro h'
+--     rw [eq_div_of_mul_eq h h']
+--   intro h'
+--   exact Eq.symm (eq_mul_of_mul_inv_eq₀ h₀ (id (Eq.symm h')))
+
+
+  -- exact
+  --   Eq.symm
+  --     ((fun {G₀} [GroupWithZero G₀] {a b c} hb ↦ (mul_inv_eq_iff_eq_mul₀ hb).mp) h (id (Eq.symm h')))
+
+
 -- example (a: ℝ): Πi : Fin (-1), a = 1 := by
 --   refine fun i ↦ ?_
   -- apply?
@@ -50,13 +63,18 @@ example : -1 + 2 = 1 := by
   exact rfl
 
 lemma lemma2_3_help (P : RateMatrix) (lambdaP : ℕ → ℝ) (h: InvariantDistribution P lambdaP) (i : ℕ):
-  lambdaP (i+2) = (((P.Q (i+1) i) + (P.Q (i+1) (i+2)))*(lambdaP (i+1)) - P.Q i (i+1)*lambdaP i)/P.Q (i+2) (i+1) := by
+  P.Q (i+2) (i+1) ≠ 0 → lambdaP (i+2) = (((P.Q (i+1) i) + (P.Q (i+1) (i+2)))*(lambdaP (i+1)) - P.Q i (i+1)*lambdaP i)/P.Q (i+2) (i+1) := by
+  intro h'''
   rcases h with ⟨h, h', h''⟩
   have h₀: i + 1 ≠ 0 := by
     exact Ne.symm (Nat.zero_ne_add_one i)
-  have non_neq_P : 0 < P.Q (i + 2) (i + 1) := by
-    apply P.departure_rate_greater_than_zero (i+1) h₀
-  rw [eq_div_iff_mul_eq (ne_of_lt non_neq_P).symm]
+  have pos_P : 0 < P.Q (i + 2) (i + 1) := by
+    have non_neg_P : 0 ≤ P.Q (i + 2) (i + 1) := by
+      exact P.departure_rate_greater_than_zero (i + 1) h₀
+    exact lt_of_le_of_ne non_neg_P (id (Ne.symm h'''))
+    -- apply?
+    -- apply P.departure_rate_greater_than_zero (i+1) h₀
+  rw [eq_div_iff_mul_eq (ne_of_lt pos_P).symm]
   symm
   rw [tsub_eq_of_eq_add]
   symm
@@ -112,45 +130,47 @@ example (n : ℕ) : ∑ i ∈ Finset.Icc 1 n, i = n * (n + 1) / 2 := by
 example (a b : ℝ) (h : a = b) : a - b = 0 := by
   apply sub_eq_zero_of_eq h
 
-lemma lemma2_3_1 (P : RateMatrix) (lambdaP : ℕ → ℝ) : (InvariantDistribution P lambdaP ∧ ∀i ≠ 0, P.Q i (i-1) ≠ 0) → (∃Λ, Λ > 0 → ∀ i, P.Q i (i+1) = Λ) →
-  ∃ Λ, Λ > 0 → ∀ n, lambdaP n = (∏ i : (Fin n), Λ/(P.Q (i + 1) i)) * (lambdaP 0) := by
+lemma lemma2_3_1 (P : RateMatrix) (lambdaP : ℕ → ℝ) : (InvariantDistribution P lambdaP ∧ ∀i ≠ 0, P.Q i (i-1) ≠ 0) → (∀ i, P.Q i (i+1) ≠ 0) →
+  ∀ n, lambdaP n = (∏ i : (Fin n), P.Q (i) (i + 1)/(P.Q (i + 1) i)) * (lambdaP 0) := by
   rintro ⟨h₁, h₂⟩
   intro h
-  rcases h with ⟨Λ, h⟩
-  use Λ
-  intro Λ_pos n
+  intro n
+  -- rcases h with ⟨Λ, h⟩/
+  -- use Λ
+  -- intro Λ_pos
+  -- intro ns
   induction' n using Nat.twoStepInduction with n ih ih₂
-  have h' : (∏ i : (Fin 0), Λ / P.Q (↑i + 1) ↑i) = (∏ i : (Finset.range (0)), Λ / P.Q (↑i + 1) ↑i) := by
+  have h' : (∏ i : (Fin 0), P.Q (i) (i + 1) / P.Q (↑i + 1) ↑i) = (∏ i : (Finset.range (0)), P.Q (i) (i + 1) / P.Q (↑i + 1) ↑i) := by
     exact rfl
 
   -- Case 0
   rw [h']
-  have h'' : (∏ i : (Finset.range (0)), Λ / P.Q (↑i + 1) ↑i) = 1 := by
-    apply Finset.prod_range_zero (fun i : ℕ => (Λ / P.Q (i + 1) i))
+  have h'' : (∏ i : (Finset.range (0)), P.Q (i) (i + 1) / P.Q (↑i + 1) ↑i) = 1 := by
+    apply Finset.prod_range_zero (fun i : ℕ => (P.Q (i) (i + 1) / P.Q (i + 1) i))
   rw[h'']
   ring
 
   -- Case 1
   rcases h₁ with ⟨h₁, h₁', h₁''⟩
-  have h''' : (∏ i : (Fin (1)), Λ / P.Q (↑i + 1) ↑i) = (∏ i ∈ (Finset.range (1)), Λ / P.Q (↑i + 1) ↑i) := by
+  have h''' : (∏ i : (Fin (1)), P.Q (i) (i + 1) / P.Q (↑i + 1) ↑i) = (∏ i ∈ (Finset.range (1)), P.Q (i) (i + 1) / P.Q (↑i + 1) ↑i) := by
     exact rfl
   rw [h''']
   have one_sub_one_eq_zero : (1 : ℕ) - (1 : ℕ) = 0 := by
     exact rfl
-  have h''''' : lambdaP 1 = Λ/(P.Q (0 + 1) 0)*(lambdaP 0) := by
+  have h''''' : lambdaP 1 = P.Q (0) (0 + 1)/(P.Q (0 + 1) 0)*(lambdaP 0) := by
     rw [mul_comm, ←mul_div_assoc]
     symm
     apply div_eq_of_eq_mul (h₂ 1 Nat.one_ne_zero)
     symm
     rw [one_sub_one_eq_zero]
-    rw [←h Λ_pos 0]
+    -- rw [←h Λ_pos 0]
     nth_rewrite 2 [mul_comm]
     exact h₁'
   have zero_add_one_eq_one : (0 + 1 : ℕ) = (1 :ℕ) := by
     ring
   rw [←zero_add_one_eq_one]
-  have succ_range : (∏ i ∈ Finset.range (0+1), Λ / P.Q (↑i + 1) ↑i) = Λ / P.Q (0 + 1) 0 := by
-    rw [Finset.prod_range_succ (fun i : ℕ => Λ / P.Q (↑i + (0 + 1)) ↑i) 0]
+  have succ_range : (∏ i ∈ Finset.range (0+1), P.Q (i) (i + 1) / P.Q (↑i + 1) ↑i) = P.Q (0) (0 + 1) / P.Q (0 + 1) 0 := by
+    rw [Finset.prod_range_succ (fun i : ℕ => P.Q (i) (i + 1) / P.Q (↑i + (0 + 1)) ↑i) 0]
     rw [Finset.prod_range_zero]
     ring
   rw [succ_range]
@@ -165,17 +185,17 @@ lemma lemma2_3_1 (P : RateMatrix) (lambdaP : ℕ → ℝ) : (InvariantDistributi
   rw [lemma2_3_help P lambdaP]
   symm
   rw [ih, ih₂]
-  have copy1 : (∏ (i : Fin (n+2)), Λ / P.Q (↑i + 1) ↑i) = (∏ (i ∈ Finset.range (n+2)), Λ / P.Q (↑i + 1) ↑i) := by
+  have copy1 : (∏ (i : Fin (n+2)), P.Q (i) (i + 1) / P.Q (↑i + 1) ↑i) = (∏ (i ∈ Finset.range (n+2)), P.Q (i) (i + 1) / P.Q (↑i + 1) ↑i) := by
     symm
-    apply Finset.prod_range (fun i : ℕ => (Λ / P.Q (i + 1) i))
+    apply Finset.prod_range (fun i : ℕ => (P.Q (i) (i + 1) / P.Q (i + 1) i))
 
-  have copy2 : (∏ (i : Fin (n+1)), Λ / P.Q (↑i + 1) ↑i) = (∏ (i ∈ Finset.range (n+1)), Λ / P.Q (↑i + 1) ↑i) := by
+  have copy2 : (∏ (i : Fin (n+1)), P.Q (i) (i + 1) / P.Q (↑i + 1) ↑i) = (∏ (i ∈ Finset.range (n+1)), P.Q (i) (i + 1) / P.Q (↑i + 1) ↑i) := by
     symm
-    apply Finset.prod_range (fun i : ℕ => (Λ / P.Q (i + 1) i))
+    apply Finset.prod_range (fun i : ℕ => (P.Q (i) (i + 1) / P.Q (i + 1) i))
 
-  have copy3 : (∏ (i : Fin (n)), Λ / P.Q (↑i + 1) ↑i) = (∏ (i ∈ Finset.range (n)), Λ / P.Q (↑i + 1) ↑i) := by
+  have copy3 : (∏ (i : Fin (n)), P.Q (i) (i + 1) / P.Q (↑i + 1) ↑i) = (∏ (i ∈ Finset.range (n)), P.Q (i) (i + 1) / P.Q (↑i + 1) ↑i) := by
     symm
-    apply Finset.prod_range (fun i : ℕ => (Λ / P.Q (i + 1) i))
+    apply Finset.prod_range (fun i : ℕ => (P.Q (i) (i + 1) / P.Q (i + 1) i))
 
 
   rw [copy1, copy2, copy3]
@@ -184,9 +204,20 @@ lemma lemma2_3_1 (P : RateMatrix) (lambdaP : ℕ → ℝ) : (InvariantDistributi
 
   have h₀: n + 1 ≠ 0 := by
     exact Ne.symm (Nat.zero_ne_add_one n)
-  have non_neq_P : 0 < P.Q (n + 2) (n + 1) := by
-    apply P.departure_rate_greater_than_zero (n+1) h₀
-  rw [eq_div_iff_mul_eq (ne_of_lt non_neq_P).symm]
+  have pos_P : 0 < P.Q (n + 2) (n + 1) := by
+    have non_neg_P : 0 ≤ P.Q (n + 2) (n + 1) := by
+      exact P.departure_rate_greater_than_zero (n + 1) h₀
+    have non_zero_P : P.Q (n + 2) (n + 2 - 1) ≠ 0 := by
+      apply h₂ (n+2)
+      exact Ne.symm (Nat.zero_ne_add_one (n + 1))
+    have non_zero_P' : P.Q (n + 2) (n + 1) ≠ 0 := by
+      exact non_zero_P
+
+      -- apply?
+    exact lt_of_le_of_ne non_neg_P (id (Ne.symm non_zero_P'))
+  -- have non_neq_P : 0 < P.Q (n + 2) (n + 1) := by
+  --   apply P.departure_rate_greater_than_zero (n+1) h₀
+  rw [eq_div_iff_mul_eq (ne_of_lt pos_P).symm]
   nth_rewrite 5 [mul_comm]
   nth_rewrite 8 [mul_comm]
   rw [mul_assoc, mul_assoc]
@@ -199,12 +230,12 @@ lemma lemma2_3_1 (P : RateMatrix) (lambdaP : ℕ → ℝ) : (InvariantDistributi
       ring
     rw [h']
   rw [←mul_sub]
-  apply rewrite (∏ x ∈ Finset.range n, Λ / P.Q (x + 1) x)
+  apply rewrite (∏ x ∈ Finset.range n, P.Q (x) (x + 1) / P.Q (x + 1) x)
   right
-  have rewrite2 : Λ / P.Q (n + 1) n * (Λ / P.Q (n + 1 + 1) (n + 1) * (lambdaP 0 * P.Q (n + 2) (n + 1))) = (lambdaP 0) * (Λ / P.Q (n + 1) n * (Λ / P.Q (n + 1 + 1) (n + 1) * P.Q (n + 2) (n + 1))) := by
+  have rewrite2 : P.Q (n) (n + 1) / P.Q (n + 1) n * (P.Q (n + 1) (n + 1 + 1) / P.Q (n + 1 + 1) (n + 1) * (lambdaP 0 * P.Q (n + 2) (n + 1))) = (lambdaP 0) * (P.Q (n) (n + 1) / P.Q (n + 1) n * (P.Q (n+1) (n + 1+1) / P.Q (n + 1 + 1) (n + 1) * P.Q (n + 2) (n + 1))) := by
     ring
 
-  have rewrite3 : Λ / P.Q (n + 1) n * (lambdaP 0 * (P.Q (n + 1) n + P.Q (n + 1) (n + 2))) - lambdaP 0 * P.Q n (n + 1) = (lambdaP 0) * (Λ / P.Q (n + 1) n * (P.Q (n + 1) n + P.Q (n + 1) (n + 2))- P.Q n (n + 1)) := by
+  have rewrite3 : P.Q (n) (n + 1) / P.Q (n + 1) n * (lambdaP 0 * (P.Q (n + 1) n + P.Q (n + 1) (n + 2))) - lambdaP 0 * P.Q n (n + 1) = (lambdaP 0) * (P.Q (n) (n + 1) / P.Q (n + 1) n * (P.Q (n + 1) n + P.Q (n + 1) (n + 2))- P.Q n (n + 1)) := by
     ring
   rw [rewrite2, rewrite3]
   apply rewrite
@@ -212,15 +243,15 @@ lemma lemma2_3_1 (P : RateMatrix) (lambdaP : ℕ → ℝ) : (InvariantDistributi
   have rewrite4 : n + 1 + 1 = n + 2 :=by
     ring
   rw [rewrite4]
-  rw [h, h]
+  -- rw [h, h]
   rw [div_eq_mul_one_div]
-  nth_rewrite 5 [←mul_one Λ]
-  have rewrite5 : Λ * (1 / P.Q (n + 1) n) * (P.Q (n + 1) n + Λ) - Λ * 1 = Λ * ((1 / P.Q (n + 1) n) * (P.Q (n + 1) n + Λ) - 1) := by
+  nth_rewrite 3 [←mul_one (P.Q (n) (n + 1))]
+  have rewrite5 : P.Q (n) (n + 1) * (1 / P.Q (n + 1) n) * (P.Q (n + 1) n + P.Q (n+1) (n + 1+1)) - P.Q (n) (n + 1) * 1 = P.Q (n) (n + 1) * ((1 / P.Q (n + 1) n) * (P.Q (n + 1) n + P.Q (n+1) (n + 1+1)) - 1) := by
     ring
   rw [rewrite5]
   rw [mul_assoc]
   rw [div_mul_cancel₀]
-  apply rewrite Λ
+  apply rewrite
   right
   rw [mul_add]
   rw [div_mul_cancel₀]
@@ -231,13 +262,234 @@ lemma lemma2_3_1 (P : RateMatrix) (lambdaP : ℕ → ℝ) : (InvariantDistributi
   exact h₀
   apply h₂
   exact Ne.symm (Nat.zero_ne_add_one (n + 1))
-  exact Λ_pos
-  exact Λ_pos
+  -- exact Λ_pos
+  -- exact Λ_pos
   constructor
   exact h₁
   constructor
   exact h₁'
   exact h₁''
+  have non_zero_P : P.Q (n + 2) (n + 2 - 1) ≠ 0 := by
+      apply h₂ (n+2)
+      exact Ne.symm (Nat.zero_ne_add_one (n + 1))
+  exact non_zero_P
+
+-- example : 1 ≠ 0 := by
+--   exact Nat.one_ne_zero
+
+example (n m : ℕ) : n = m ∨ n ≠ m := by
+  exact eq_or_ne n m
+
+lemma lemma2_3_3a' (P : RateMatrix) (lambdaP : ℕ → ℝ) : (InvariantDistribution P lambdaP) →
+  -- (∃ k : ℕ, ∀i, i ≠ 0 ∧ i < k → P.Q i (i-1) ≠ 0) → (∃ k : ℕ, ∀i, i < k → P.Q i (i+1) ≠ 0) →
+  ∀k : ℕ, (∀i, i ≠ 0 ∧ i < k → P.Q i (i-1) ≠ 0) ∧ (∀i, i < k → P.Q i (i+1) ≠ 0)→ ∀ n, n < k →
+   lambdaP n = (∏ i : (Fin n), (P.Q i (i+1))/(P.Q (i + 1) i)) * (lambdaP 0) := by
+  intro h₁ k
+  rintro ⟨h, h₂⟩
+  -- have copy : ∀i, i < k → (i ≠ 0 → P.Q i (i-1) ≠ 0) ∧ P.Q i (i+1) ≠ 0 := by
+  --   intro i_lt_k
+    -- refine fun i a ↦ ?_
+
+  intro n n_pos
+  rcases h₁ with ⟨h₁, h₁', h₁''⟩
+
+  -- intro i i_lt_k
+  -- have h₁ : (∃ k : ℕ, ∀i, i ≠ 0 ∧ i < k → P.Q i (i-1) ≠ 0) := by
+  --   have h₁help : (∀ j, (j < k ∧ j ≠ 0) → P.Q j (j-1) ≠ 0) := by
+  --     intro j
+  --     rintro ⟨h, h'⟩
+  --     rcases eq_or_ne j i with h | h
+  --     · rw [←h] at h₁'
+  --       apply h₁' h'
+
+      -- rcases
+      -- apply?
+    -- use k
+    -- intro i'
+    -- rintro ⟨h'', h'''⟩
+    -- apply h₁' h''
+  -- have
+  -- rintro ⟨h₁, h₂, h₃⟩
+
+
+  -- rcases h with ⟨k, h⟩
+  -- intro h'
+  -- rcases h' with ⟨Λ, h'⟩
+  -- use k
+  -- intro n n_pos
+  -- use Λ
+  -- intro Λ_pos
+  -- have hypothes: ∀ (i : ℕ), P.Q i (i + 1) = Λ := by
+  --   exact fun i ↦ h' Λ_pos i
+
+
+
+  -- use k
+  -- use Λ
+
+
+  -- rcases h' with ⟨k_pos, h'⟩
+  -- use Λ
+  -- intro Λ_pos n
+  induction' n using Nat.twoStepInduction with n ih ih₂
+  have h' : (∏ i : (Fin 0), P.Q (↑i) (↑i + 1) / P.Q (↑i + 1) ↑i) = (∏ i : (Finset.range (0)), P.Q (↑i) (↑i + 1) / P.Q (↑i + 1) ↑i) := by
+    exact rfl
+
+  -- Case 0
+  rw [h']
+  have h'' : (∏ i : (Finset.range (0)), P.Q (↑i) (↑i + 1) / P.Q (↑i + 1) ↑i) = 1 := by
+    apply Finset.prod_range_zero (fun i : ℕ => (P.Q (↑i) (↑i + 1) / P.Q (i + 1) i))
+  rw[h'']
+  ring
+
+  -- Case 1
+  -- rcases (h₁ 1 Nat.one_ne_zero) with ⟨h₁, h₁', h₁''⟩
+  have h''' : (∏ i : (Fin (1)), P.Q (↑i) (↑i + 1) / P.Q (↑i + 1) ↑i) = (∏ i ∈ (Finset.range (1)), P.Q (↑i) (↑i + 1) / P.Q (↑i + 1) ↑i) := by
+    exact rfl
+  rw [h''']
+  have one_sub_one_eq_zero : (1 : ℕ) - (1 : ℕ) = 0 := by
+    exact rfl
+  have h''''' : lambdaP 1 = P.Q (0) (0 + 1)/(P.Q (0 + 1) 0)*(lambdaP 0) := by
+    rw [mul_comm, ←mul_div_assoc]
+    symm
+    -- have neq_zero:  P.Q (0 + 1) 0 ≠ 0:= by
+    --   apply h 1 ⟨Nat.one_ne_zero, n_pos⟩
+    apply div_eq_of_eq_mul (h 1 ⟨Nat.one_ne_zero, n_pos⟩)
+    symm
+    rw [one_sub_one_eq_zero]
+    -- rw [←hypothes 0]
+    nth_rewrite 2 [mul_comm]
+    assumption
+  have zero_add_one_eq_one : (0 + 1 : ℕ) = (1 :ℕ) := by
+    ring
+  rw [←zero_add_one_eq_one]
+  have succ_range : (∏ i ∈ Finset.range (0+1), P.Q (↑i) (↑i + 1) / P.Q (↑i + 1) ↑i) = P.Q 0 (0+1) / P.Q (0 + 1) 0 := by
+    rw [Finset.prod_range_succ (fun i : ℕ => P.Q (↑i) (↑i + 1) / P.Q (↑i + (0 + 1)) ↑i) 0]
+    rw [Finset.prod_range_zero]
+    ring
+  rw [succ_range]
+  simp [h''''']
+
+  -- Start of ih proof
+  -- rcases h₁ with ⟨h₁, h₁', h₁''⟩
+  have val_gt_1_gt_0 : ∀(i : ℕ), i ≥ 1 → i ≠ 0 := by
+    exact fun i a ↦ Nat.ne_zero_of_lt a -- From apply?
+  have i_sub_one_gt :  ∀(i : ℕ), i ≥ 2 → i - 1 ≥ 1 := by
+    exact fun i a ↦ Nat.le_sub_one_of_lt a
+  rw [lemma2_3_help P lambdaP]
+  symm
+  rw [ih, ih₂]
+  have copy1 : (∏ (i : Fin (n+2)), P.Q (↑i) (↑i + 1) / P.Q (↑i + 1) ↑i) = (∏ (i ∈ Finset.range (n+2)), P.Q (↑i) (↑i + 1) / P.Q (↑i + 1) ↑i) := by
+    symm
+    apply Finset.prod_range (fun i : ℕ => (P.Q (↑i) (↑i + 1) / P.Q (i + 1) i))
+
+  have copy2 : (∏ (i : Fin (n+1)), P.Q (↑i) (↑i + 1) / P.Q (↑i + 1) ↑i) = (∏ (i ∈ Finset.range (n+1)), P.Q (↑i) (↑i + 1) / P.Q (↑i + 1) ↑i) := by
+    symm
+    apply Finset.prod_range (fun i : ℕ => (P.Q (↑i) (↑i + 1) / P.Q (i + 1) i))
+
+  have copy3 : (∏ (i : Fin (n)), P.Q (↑i) (↑i + 1) / P.Q (↑i + 1) ↑i) = (∏ (i ∈ Finset.range (n)), P.Q (↑i) (↑i + 1) / P.Q (↑i + 1) ↑i) := by
+    symm
+    apply Finset.prod_range (fun i : ℕ => (P.Q (↑i) (↑i + 1) / P.Q (i + 1) i))
+
+
+  rw [copy1, copy2, copy3]
+  rw [Finset.prod_range_succ]
+  rw [Finset.prod_range_succ]
+
+  have h₀: n + 1 ≠ 0 := by
+    exact Ne.symm (Nat.zero_ne_add_one n)
+  have pos_P : 0 < P.Q (n + 2) (n + 1) := by
+    have non_neg_P : 0 ≤ P.Q (n + 2) (n + 1) := by
+      exact P.departure_rate_greater_than_zero (n + 1) h₀
+    have non_zero_P : P.Q (n + 2) (n + 2 - 1) ≠ 0 := by
+      have non_zero : n+2 ≠ 0 := by
+        exact Ne.symm (Nat.zero_ne_add_one (n + 1))
+      apply h (n+2) ⟨non_zero, n_pos⟩
+      -- exact Ne.symm (Nat.zero_ne_add_one (n + 1))
+    have non_zero_P' : P.Q (n + 2) (n + 1) ≠ 0 := by
+      exact non_zero_P
+
+      -- apply?
+    exact lt_of_le_of_ne non_neg_P (id (Ne.symm non_zero_P'))
+  -- have non_neq_P : 0 < P.Q (n + 2) (n + 1) := by
+  --   apply P.departure_rate_greater_than_zero (n+1) h₀
+  rw [eq_div_iff_mul_eq (ne_of_lt pos_P).symm]
+  nth_rewrite 5 [mul_comm]
+  nth_rewrite 8 [mul_comm]
+  rw [mul_assoc, mul_assoc]
+  rw [mul_assoc, mul_assoc]
+  rw [mul_assoc, mul_assoc]
+
+  have rewrite (a b c : ℝ) (hab : a = 0 ∨ b = c) : a * b = a * c:= by
+    rcases hab with h' | h'
+    · rw [h']
+      ring
+    rw [h']
+  rw [←mul_sub]
+  apply rewrite (∏ x ∈ Finset.range n, P.Q (x) (x + 1) / P.Q (x + 1) x)
+  right
+  have rewrite2 : P.Q (n) (n + 1) / P.Q (n + 1) n * (P.Q (n+1) (n + 1+1) / P.Q (n + 1 + 1) (n + 1) * (lambdaP 0 * P.Q (n + 2) (n + 1))) = (lambdaP 0) * (P.Q (n) (n + 1) / P.Q (n + 1) n * (P.Q (n+1) (n + 1+1) / P.Q (n + 1 + 1) (n + 1) * P.Q (n + 2) (n + 1))) := by
+    ring
+
+  have rewrite3 : P.Q (n) (n + 1) / P.Q (n + 1) n * (lambdaP 0 * (P.Q (n + 1) n + P.Q (n + 1) (n + 2))) - lambdaP 0 * P.Q n (n + 1) = (lambdaP 0) * (P.Q (n) (n + 1) / P.Q (n + 1) n * (P.Q (n + 1) n + P.Q (n + 1) (n + 2))- P.Q n (n + 1)) := by
+    ring
+  rw [rewrite2, rewrite3]
+  apply rewrite
+  right
+  have rewrite4 : n + 1 + 1 = n + 2 :=by
+    ring
+  rw [rewrite4]
+  -- rw [h', h']
+  rw [div_eq_mul_one_div]
+  nth_rewrite 3 [←mul_one (P.Q (n) (n + 1))]
+  have rewrite5 : P.Q (n) (n + 1) * (1 / P.Q (n + 1) n) * (P.Q (n + 1) n + P.Q (n+1) (n + 2)) - (P.Q (n) (n + 1)) * 1 = P.Q (n) (n + 1) * ((1 / P.Q (n + 1) n) * (P.Q (n + 1) n + P.Q (n+1) (n + 2)) - 1) := by
+    ring
+  rw [rewrite5]
+  rw [mul_assoc]
+  rw [div_mul_cancel₀]
+  apply rewrite
+  right
+  rw [mul_add]
+  rw [div_mul_cancel₀]
+  ring
+  -- We proved the difficult part!!!!
+  -- Now just some cleaning up
+  apply h (n+1)
+  constructor
+  · exact h₀
+  exact Nat.lt_of_succ_lt n_pos
+  apply h (n+2)
+  constructor
+  · exact Ne.symm (Nat.zero_ne_add_one (n + 1))
+  exact n_pos
+
+    -- ⟨apply?, ⟩
+  -- exact h₀
+  -- apply h₂
+  -- exact Ne.symm (Nat.zero_ne_add_one (n + 1))
+  -- exact Λ_pos
+  -- exact Λ_pos
+  -- constructor
+  exact Nat.lt_of_succ_lt n_pos
+  exact Nat.lt_of_add_right_lt n_pos
+  exact ⟨h₁, h₁', h₁''⟩
+  apply h (n+2)
+  constructor
+  · exact Ne.symm (Nat.zero_ne_add_one (n + 1))
+  exact n_pos
+
+  -- apply h (n+2)
+  -- constructor
+  -- · exact Ne.symm (Nat.zero_ne_add_one (n + 1))
+  -- exact n_pos
+  -- exact h₁
+  -- constructor
+  -- exact h₁'
+  -- exact h₁''
+  -- have non_zero_P : P.Q (n + 2) (n + 2 - 1) ≠ 0 := by
+  --     apply h₂ (n+2)
+  --     exact Ne.symm (Nat.zero_ne_add_one (n + 1))
+  -- exact non_zero_P
 
 -- #print axioms lemma2_3_1
 
@@ -287,7 +539,7 @@ example (m n : ℕ) : m = n ↔ m ≥ n ∧ m ≤ n := by
 
 lemma lemma2_3_3a (P : RateMatrix) (lambdaP : ℕ → ℝ) (h :InvariantDistribution P lambdaP) :
   ∀n, n ≠ 0 → ∀k, k > n → (∀m, (n < m ∧ m < k) → P.Q (m-1) m ≠ 0 ∧ P.Q m (m-1) ≠ 0) → P.Q n (n-1) = 0 ∧ P.Q k (k-1) = 0 → lambdaP (n-1) = 0 →
-  ∀m', (n < m' ∧ m' ≤ k) → lambdaP m' = (∏i : (Fin (m'-n)), (P.Q (i + n) (i+n+1))/(P.Q (i+n+1) (i+n))) * lambdaP n := by
+  ∀m', (n < m' ∧ m' < k) → lambdaP m' = (∏i : (Fin (m'-n)), (P.Q (i + n) (i+n+1))/(P.Q (i+n+1) (i+n))) * lambdaP n := by
   intro n n_non_zero k k_gt_n inbetween_non_zero ⟨n_zero_dep, k_zero_dep⟩ lambda_n_zero
   intro m' mp_bt_n_k
   -- rcases m_bt_n_k with ⟨m_gt_n, m_lt_k⟩
@@ -299,18 +551,8 @@ lemma lemma2_3_3a (P : RateMatrix) (lambdaP : ℕ → ℝ) (h :InvariantDistribu
   · have h : n = 0 := by
       exact Nat.lt_one_iff.mp mp_gt_n
     contradiction
-  -- by_contra
-  -- apply?
-  -- Start ih
-  -- have mp_gt_n : m' + 1 > m → m' > n := by
-  --   intro h
-  --   linarith [h, m_gt_n]
-  -- have k_add_one_sub_n_eq_k_sub_n_add_one : k - n = (k - n - 1) + 1 := by
-  --   omega
   have fin_eq_range : (∏ i : (Fin (k - n)), P.Q (↑i + n) (↑i + n + 1) / P.Q (↑i + n + 1) (↑i + n)) = (∏ i ∈ Finset.range (k - n), P.Q (↑i + n) (↑i + n + 1) / P.Q (↑i + n + 1) (↑i + n)) := by
     exact Eq.symm (Finset.prod_range fun i ↦ P.Q (i + n) (i + n + 1) / P.Q (i + n + 1) (i + n))
-  -- rw [fin_eq_range]
-  -- rw [k_add_one_sub_n_eq_k_sub_n_add_one]
 
   have cases : m' + 1 < n ∨ m' + 1 = n ∨ m' + 1 = n + 1 ∨ m' + 1 > n + 1 := by
     have cases' : (m' + 1 < n ∨ m' + 1 = n) ∨ m' + 1 > n := by
@@ -331,8 +573,6 @@ lemma lemma2_3_3a (P : RateMatrix) (lambdaP : ℕ → ℝ) (h :InvariantDistribu
     apply cases'''
     exact cases'
 
-
-
   rcases cases with mp_add_one_lt_n | mp_add_one_eq_n | mp_add_one_eq_n_add_one | mp_add_one_gt_n_add_one
   · by_contra
     have hypo: n < m' + 2 → n ≤ m' + 1 := by
@@ -344,10 +584,7 @@ lemma lemma2_3_3a (P : RateMatrix) (lambdaP : ℕ → ℝ) (h :InvariantDistribu
     apply hypo2
     exact mp_gt_n
     exact mp_add_one_lt_n
-  -- · have mp_add_one_eq_n
 
-  --   have hypo: m' > n := by
-  --     apply antisymm_iff
   · have hypo : m' + 2 - n = 0 + 1 := by
       have hypo : m' + 2 - n = m' + 1 + 1 - n := by
         ring
@@ -385,6 +622,12 @@ lemma lemma2_3_3a (P : RateMatrix) (lambdaP : ℕ → ℝ) (h :InvariantDistribu
     rw [n_zero_dep]
     ring
     exact h
+    have non_zero_P :  ∀ (l : ℕ), n < l ∧ l < k → P.Q l (l-1) ≠ 0 := by
+      intro l h
+      apply (inbetween_non_zero l h).right
+    have mp_between : n < m' + 2 ∧ m' + 2 < k := by
+      exact ⟨mp_gt_n, mp_le_k⟩
+    apply non_zero_P (m'+2) mp_between
   · simp at mp_add_one_eq_n_add_one
     have hypo : m' + 2- n = 2 := by
       rw [mp_add_one_eq_n_add_one]
@@ -401,11 +644,9 @@ lemma lemma2_3_3a (P : RateMatrix) (lambdaP : ℕ → ℝ) (h :InvariantDistribu
       exact Nat.le_of_eq (id (Eq.symm mp_add_one_eq_n_add_one))
     have n_lt_mp_add_one : n < m' + 1 := by
       exact Order.lt_add_one_iff.mpr n_le_mp_add_one
-    -- have k_geq_n_add_one : k ≥ n + 1 := by
-    --   exact k_gt_n
 
-    have k_geq_mp_add_one : k ≥ m' + 1 := by
-      exact Nat.le_of_succ_le mp_le_k
+    have k_geq_mp_add_one : k > m' + 1 := by
+      exact Nat.lt_of_succ_lt mp_le_k
 
     nth_rewrite 5 [←mp_add_one_eq_n_add_one]
     rw [ih₂ n_lt_mp_add_one k_geq_mp_add_one]
@@ -444,7 +685,6 @@ lemma lemma2_3_3a (P : RateMatrix) (lambdaP : ℕ → ℝ) (h :InvariantDistribu
     nth_rewrite 3 [mul_comm]
     rw [rewrite]
     right
-    -- rcases inbetween_non_zero with ⟨arrival_non_zero, dep_non_zero⟩
     rw [add_mul]
     rw [div_eq_mul_one_div]
     repeat rw [←mul_assoc]
@@ -465,7 +705,7 @@ lemma lemma2_3_3a (P : RateMatrix) (lambdaP : ℕ → ℝ) (h :InvariantDistribu
       intro m h
       apply (inbetween_non_zero m h).right
     have hypo5 : m' + 1 < k := by
-      exact mp_le_k
+      exact k_geq_mp_add_one
     apply all_between_dep_nonzero (m' + 1)
 
     constructor
@@ -473,50 +713,16 @@ lemma lemma2_3_3a (P : RateMatrix) (lambdaP : ℕ → ℝ) (h :InvariantDistribu
     apply hypo5
     exact h
 
-
-    -- have
-    -- have m_gt_n_and_m_lt_k_imp_mp_bt_n_k : n < m ∧ m < k → P.Q m (m - 1) ≠ 0 := by
-    --   exact fun a ↦ dep_non_zero
-    -- have m_gt_n_and_m_lt_k_imp_mp_bt_n_k : ∀l, (n < l ∧ l < k) → P.Q l (l - 1) ≠ 0 := by
-
-    --   apply?
-
-  --   intro m' mp_bt_n_k
-  -- rcases m_bt_n_k with ⟨m_gt_n, m_lt_k⟩
-    -- have mp_bt_n_k :
-
-    -- apply?
-
-
-    -- have hypo4 : ∀l : ℕ, (n < l ∧ l < k) → (P.Q (l-1) l ≠ 0) := by
-    --   intro l
-    --   have neq_if_not_eq : (P.Q (l-1) l ≠ 0) ↔ ¬(P.Q (l-1) l = 0) := by
-    --     exact Eq.to_iff rfl
-    --   intro ⟨a, b⟩
-    --   rw [neq_if_not_eq]
-
-
-
-      -- apply?
-    -- have
-
-    -- rw [div_self (dep_non_zero)]
-
-    -- repeat rw [←mul_assoc]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    have non_zero_P :  ∀ (l : ℕ), n < l ∧ l < k → P.Q l (l-1) ≠ 0 := by
+      intro l h
+      apply (inbetween_non_zero l h).right
+    have mp_between : n < m' + 2 ∧ m' + 2 < k := by
+      exact ⟨mp_gt_n, mp_le_k⟩
+    have n_between : n < n + 2 ∧ n + 2 < k := by
+      rw [mp_add_one_eq_n_add_one] at mp_between
+      assumption
+      -- exact ⟨mp_gt_n, mp_le_k⟩
+    apply non_zero_P (n+2) n_between
 
   rw [lemma2_3_help P lambdaP]
   rw [ih]
@@ -539,15 +745,6 @@ lemma lemma2_3_3a (P : RateMatrix) (lambdaP : ℕ → ℝ) (h :InvariantDistribu
 
   rw [copy1, copy2, copy3]
 
-
-
-  -- have n_le_mp : n ≤ m' := by
-  --   refine Nat.le_of_lt_succ ?_
-  --   simp
-    -- apply lt_add_of_lt_of_pos
-    -- refine Nat.lt_add_right 1 mp_gt_n
-    -- linarith [mp_gt_n]
-
   have mp_add_one_sub_n_eq_mp_sub_n_add_one : m' + 1 - n = (m' - n) + 1 := by
     have h'' : m' > n  := by
       exact Nat.succ_lt_succ_iff.mp mp_add_one_gt_n_add_one
@@ -556,7 +753,6 @@ lemma lemma2_3_3a (P : RateMatrix) (lambdaP : ℕ → ℝ) (h :InvariantDistribu
     ring
     rw [Nat.add_sub_assoc h']
   rw [mp_add_one_sub_n_eq_mp_sub_n_add_one]
-    -- refine  ?_
   rw [Finset.prod_range_succ]
 
   have mp_add_two_sub_n_eq_mp_sub_n_add_two : m' + 2 - n = (m' - n) + 2 := by
@@ -616,11 +812,14 @@ lemma lemma2_3_3a (P : RateMatrix) (lambdaP : ℕ → ℝ) (h :InvariantDistribu
   rw [div_self]
   rw [one_mul]
   ring
+
+  -- Main proof accepted just some clean-up to do :)
   have all_between_dep_nonzero : ∀ (m : ℕ), n < m ∧ m < k → P.Q (m) (m-1) ≠ 0 := by
     intro m h
     apply (inbetween_non_zero m h).right
   have hypo5 : m' + 1 < k := by
-    exact mp_le_k
+    exact Nat.lt_of_succ_lt mp_le_k
+    -- exact mp_le_k
   apply all_between_dep_nonzero (m' + 1)
 
   have n_lt_mp_add_one : m' + 1 > n := by
@@ -638,72 +837,455 @@ lemma lemma2_3_3a (P : RateMatrix) (lambdaP : ℕ → ℝ) (h :InvariantDistribu
     exact Nat.lt_add_right 1 helper
 
   exact n_lt_mp_add_one
-
-  -- have mp_add_one_gt_n :
-  -- exact hypo5
-
   exact Nat.le_of_succ_le mp_le_k
   exact Nat.succ_lt_succ_iff.mp mp_add_one_gt_n_add_one
-  have mp_le_k : m' ≤ k := by
-    exact Nat.le_of_add_right_le mp_le_k
-  exact mp_le_k
+  have mp_lt_k : m' < k := by
+    have mp_add_one_le_k : m' + 1 ≤ k := by
+      linarith [mp_le_k]
+      -- exact mp_le_k
+      -- apply?
+    exact mp_add_one_le_k
+    -- exact Nat.le_of_succ_le mp_add_one_le_k
+    -- exact Nat.le_of_add_right_le mp_le_k
+  exact mp_lt_k
   exact h
+  have non_zero_P :  ∀ (l : ℕ), n < l ∧ l < k → P.Q l (l-1) ≠ 0 := by
+      intro l h
+      apply (inbetween_non_zero l h).right
+  have mp_between : n < m' + 2 ∧ m' + 2 < k := by
+    exact ⟨mp_gt_n, mp_le_k⟩
+  apply non_zero_P (m'+2) mp_between
 
 
-
-  -- have mp_add_one_le_k : m'  + 1 < k := by
-
-
-  -- apply
-
-  -- apply hypo5
+-- lemma lemma2_3_3b (P : RateMatrix) (lambdaP : ℕ → ℝ) (h :InvariantDistribution P lambdaP) {m : ℕ}
+--   (A : {n : (Fin m) // (P.Q n (n-1) ≠ 0) ∧ Fin.toNat n ≠ 0}) : ∀ (i : Fin m), i ∈ A → Fin.toNat i ≠ 1 → lambdaP (i-1) = 0, 1=1 := by
+--   sorry
 
 
+lemma fin_add_eq_non_add (n : ℕ) (n_non_zero : n ≠ 0): Fin (n - 1 + 1) = Fin n := by
+  have  h:  n - 1 + 1 = n := by
+    refine Nat.sub_add_cancel ?_
+    exact Nat.one_le_iff_ne_zero.mpr n_non_zero
+  rw [h]
 
+lemma n_sub_one_add_one_eq_n (n : ℕ) (n_non_zero : n ≠ 0) : n - 1 + 1 = n := by
+  refine Nat.sub_add_cancel ?_
+  exact Nat.one_le_iff_ne_zero.mpr n_non_zero
 
+-- lemma ele_of_wrong_fin_eq_other_fin (n : ℕ) (n_non_zero : n ≠ 0) : ∀ i : Fin (n - 1 + 1) →  i :  Fin (n) := by
+  -- refine type_eq_of_heq ?_
 
+local notation "mycast("a","b","c")" => (Fin.cast (n_sub_one_add_one_eq_n a b) (Fin.castSucc c))
+local notation "mycast'("a","b","c")" => (Fin.cast (n_sub_one_add_one_eq_n a b) c)
 
+example (n : ℕ) (h : n -1 = 0) : n = 1 ∨ n = 0 := by
+  have basically_goal : n ≤ 1 := by
+    exact Nat.le_of_sub_eq_zero h
+  have helper :  ¬n > 1 := by
+    exact Nat.not_lt.mpr basically_goal
+  rcases lt_trichotomy n 1 with a | b | c
+  · right
+    exact Nat.lt_one_iff.mp a
+  left
+  assumption
+  contradiction
 
-
-    -- refine Nat.add_right_cancel_iff.mpr ?_
-    -- refine Nat.sub_add_cancel ?_
-    -- have hypo7 : m' > n := by
-    --   exact Nat.succ_lt_succ_iff.mp mp_add_one_gt_n_add_one
-    -- exact Nat.le_of_succ_le hypo7
-
-
-
-  -- apply?
-
-  -- simp
-
-  -- ring
-
-
-  -- rw [lambda_up_front]
-  -- nth_rewrite 4 [mul_comm]
-  -- rw [div_eq_mul_one_div]
-  -- repeat rw [mul_assoc]
-  -- apply rewrite
   -- right
-  -- have prod_up_front : ((P.Q (m'' + 1) m'' + P.Q (m'' + 1) (m'' + 2)) *
-  --     ∏ i : Fin (k-n), P.Q (↑i + n) (↑i + n + 1) / P.Q (↑i + n + 1) (↑i + n) -
-  --     P.Q m'' (m'' + 1) *
-  --     ∏ i : Fin (k - n), P.Q (↑i + n) (↑i + n + 1) / P.Q (↑i + n + 1) (↑i + n)) *
-  --     (1 / P.Q (m'' + 2) (m'' + 1)) =
-  --     ((∏ i : Fin (k-n), P.Q (↑i + n) (↑i + n + 1) / P.Q (↑i + n + 1) (↑i + n)) *
-  --     (((P.Q (m'' + 1) m'' + P.Q (m'' + 1) (m'' + 2)) - P.Q m'' (m'' + 1)) *
-  --     (1 / P.Q (m'' + 2) (m'' + 1)))) := by
-  --     repeat rw [←mul_assoc]
-  --     nth_rewrite 2 [mul_comm]
-  --     nth_rewrite 3 [mul_comm]
-  --     repeat rw [mul_assoc]
-  --     rw [←mul_sub]
-  --     repeat rw [mul_assoc]
-  -- rw [prod_up_front]
-  -- nth_rewrite 2 [←mul_one (∏ i : Fin (k-n), P.Q (↑i + n) (↑i + n + 1) / P.Q (↑i + n + 1) (↑i + n))]
-  -- apply rewrite (∏ i : Fin (k-n), P.Q (↑i + n) (↑i + n + 1) / P.Q (↑i + n + 1) (↑i + n))
-  -- right
+  -- exact Or.symm ((fun {n} ↦ Nat.le_one_iff_eq_zero_or_eq_one.mp) basically_goal)
+
+  -- have asd: n -1 +1 = 1 := by
+  --   exact Nat.add_left_eq_self.mpr h
+
+  -- constructor/
+  -- · apply?
+lemma helper_lema (i : ℕ) {n : ℕ} (h : i < n - 1) : i < n := by
+  exact Nat.lt_of_lt_pred h
+
+lemma helper_lema' (i : ℕ) {n : ℕ} (h : i < n - 1) : i + 1 < n := by
+  exact Nat.add_lt_of_lt_sub h
+
+-- example (n : ℕ) (h: n < n) : false := by
+--   linarith [h]
+
+-- example (n m : ℕ) : n < m ∧ n + 1 > m → false := by
+--   intro ⟨a, b⟩
+--   have negation : ¬(n + 1 ≤ m) := by
+--     exact Nat.not_le_of_lt b
+--   contradiction
+
+-- example (i : ℕ) : i = 0 ∨ i > 0 := by
+--   exact Nat.eq_zero_or_pos i
+  -- exact False.elim dfwsg
+  -- exact False.elim dfwsg
+-- example (i : ℕ) (h : i - 1 =0): i =0 ∨ i = 1 := by
+--   refine Nat.le_one_iff_eq_zero_or_eq_one.mp ?_
+--   exact Nat.le_of_sub_eq_zero h
+
+-- example (n m : ℕ)(a : n > 0) (b : m > 0) : (n>0) ∧ (m>0) := by
+--   exact ⟨a, b⟩
+
+lemma lemma2_3_3b (P : RateMatrix) (lambdaP : ℕ → ℝ) (h'' :InvariantDistribution P lambdaP) (n : ℕ) [NeZero n] (n_non_zero: n ≠ 0) (A : Fin n → ℕ)
+  (Indices_props : (∀i : ℕ, (h : i < n-1) → (A ⟨i, (helper_lema i h)⟩  ≠ 0→
+  P.Q (A ⟨i, (helper_lema i h)⟩) (A ⟨i, (helper_lema i h)⟩-1) = 0) ∧ (A ⟨i, (helper_lema i h)⟩) < (A ⟨i+1, helper_lema' i h⟩)) ∧
+  P.Q (A mycast'(n,n_non_zero,(Fin.last (n-1)))) (A mycast'(n,n_non_zero,Fin.last (n-1)) - 1) = 0) :
+  (∀i : ℕ, P.Q i (i+1) ≠ 0) → (∀m : ℕ, m ≠ 0 ∧ P.Q (m) (m-1) = 0 → ∃i : Fin (n), m = A i) → ∀ i : Fin n, A i ≠ 0 → lambdaP ((A i)-1) = 0 := by
+  intro pos_arrival
+  intro no_missed_vals
+  -- rcases h with ⟨a, h⟩
+  have all_i_non_zero_bigger_A : ∀ i : (Fin n), ∀ j : (Fin n), i > j → A i > (A j) := by
+    intro i j h''
+    rcases i with ⟨i, i_fin⟩
+    rcases j with ⟨j, j_fin⟩
+    -- have ifin_eq_jfin : i_fin = j_fin := by
+    --   exact
+    induction' i with i ih
+    · induction' j with j jh
+      · contradiction
+      contradiction
+    induction' j with j jh
+    -- have h''' : (i+1) < (n-1) ∨ i+1 = n-1 ∨ i+1 > n-1 := by
+    --   apply lt_trichotomy (i+1) (n-1)
+    rcases (lt_trichotomy (i+1) (n-1)) with h | h | h
+    · have i_in_fin : ∃ m : Fin (n-1), m = i + 1 := by
+        exact CanLift.prf (i + 1) h
+      rcases (lt_trichotomy (n-1) (1)) with h' | h' | h'
+      · have n_lt_2 : n < 2 := by
+          exact (Nat.sub_lt_sub_iff_right j_fin).mp h'
+        have i_lt_1 : i + 1 < 1 := by
+          exact Nat.lt_trans h h'
+        have i_lt_0 : i < 0 := by
+          exact Nat.succ_lt_succ_iff.mp i_lt_1
+        contradiction
+      · rw [h'] at h
+        have i_lt_0 : i < 0 := by
+          exact Nat.succ_lt_succ_iff.mp h
+        contradiction
+      · have n_sub_one_neq_zero : n-1 ≠ 0 := by
+         exact Nat.ne_zero_of_lt h
+        have n_ne_zero : NeZero (n-1) := by
+          exact { out := n_sub_one_neq_zero }
+        have fin_nat_i_eq_i : Fin.ofNat' (n-1) (i) = i := by
+          exact rfl
+        have i_fin' : i < n -1:= by
+          exact Nat.lt_sub_of_add_lt i_fin
+        have i_fin'' : i < n := by
+          exact helper_lema i i_fin'
+        have i_lt_pred' : A ⟨i + 1, i_fin⟩ > A ⟨i, i_fin''⟩ := by
+          apply (Indices_props.left i i_fin').right
+        rcases Nat.eq_zero_or_pos i with h''' | h'''
+        · have equal : (⟨i, i_fin''⟩ : Fin n) = ⟨0, j_fin⟩ := by
+            exact Fin.mk.inj_iff.mpr h'''
+          rw [equal] at i_lt_pred'
+          assumption
+        have i_add_gt_0 : A ⟨i, i_fin''⟩ > A ⟨0, j_fin⟩ := by
+          exact ih i_fin'' h'''
+        exact Nat.lt_trans (ih i_fin'' h''') i_lt_pred'
+    have i_fin' : i < n :=by
+      exact Nat.lt_of_succ_lt i_fin
+    have i_fin'' : i < n-1  := by
+      exact Nat.lt_sub_of_add_lt i_fin
+    have i_add_one_gt_i : A ⟨i + 1, i_fin⟩ > A ⟨i, i_fin'⟩ := by
+      apply (Indices_props.left i i_fin'').right
+    · rcases Nat.eq_zero_or_pos i with h''' | h'''
+      · have equal : (⟨i, i_fin'⟩ : Fin n) = ⟨0, j_fin⟩ := by
+          exact Fin.mk.inj_iff.mpr h'''
+        rw [equal] at i_add_one_gt_i
+        assumption
+      have i_gt_j : (⟨i, i_fin'⟩ : Fin n) > ⟨0, j_fin⟩ := by
+        exact h'''
+      have gt_zero : A ⟨i, i_fin'⟩ > A ⟨0, j_fin⟩ := by
+        apply ih i_fin' i_gt_j
+      exact Nat.lt_trans (ih i_fin' h''') i_add_one_gt_i
+    · have hypo : n < i + 2 := by
+        exact (Nat.sub_lt_sub_iff_right j_fin).mp h
+      have negation : ¬(i + 2 ≤ n) := by
+        exact Nat.not_le_of_lt hypo
+      contradiction
+    have i_fin' : i < n :=by
+      exact Nat.lt_of_succ_lt i_fin
+    have i_fin'' : i < n-1  := by
+      exact Nat.lt_sub_of_add_lt i_fin
+    have j_fin' : j < n := by
+      exact Nat.lt_of_succ_lt j_fin
+    rcases Nat.eq_zero_or_pos i with h''' | h'''
+    · have equal' : (⟨i, i_fin'⟩ : Fin n) > ⟨j, j_fin'⟩ := by
+        exact Fin.succ_lt_succ_iff.mp h''
+      have i_gt_0 : i > 0 := by
+        exact Nat.zero_lt_of_lt equal'
+      have i_neq_0 : i ≠ 0 := by
+        exact Nat.ne_zero_of_lt equal'
+      contradiction
+
+    rcases (lt_trichotomy (i) (j+1)) with h | h | h
+    · have i_gt_j : i > j := by
+        exact Nat.succ_lt_succ_iff.mp h''
+      have neg : ¬(i ≤ j) := by
+        exact Nat.not_le_of_lt i_gt_j
+      have neg' : ¬(i < j + 1) := by
+        exact Nat.not_lt.mpr i_gt_j
+      contradiction
+    · have i_lt_n : i < n-1 := by
+        exact i_fin''
+      have greater : A ⟨i + 1, i_fin⟩ > A ⟨i, i_fin'⟩ := by
+        apply (Indices_props.left (i) i_lt_n).right
+      have equal : (⟨i, i_fin'⟩ : Fin n) = ⟨j+1, j_fin⟩ := by
+        exact Fin.mk.inj_iff.mpr h
+      rw [equal] at greater
+      assumption
+    have greater' : (⟨i, i_fin'⟩ : Fin n) > ⟨j + 1, j_fin⟩ := by
+      exact h
+    have greater : A ⟨i, i_fin'⟩ > A ⟨j + 1, j_fin⟩ := by
+      apply ih _ greater'
+    have greater'' :  A ⟨i + 1, i_fin⟩ >  A ⟨i, i_fin'⟩ := by
+      apply (Indices_props.left _ _).right
+      exact i_fin''
+    exact Nat.lt_trans (ih i_fin' h) greater''
+
+  intro i
+  intro non_zero_A
+  rcases i with ⟨i, ih⟩
+  induction' i with i ih
+  · have no_between : (∀ m : ℕ, m > 0 ∧ m < (A (Fin.ofNat' n 0)) → P.Q m (m-1) ≠ 0) := by
+      intro m
+      intro h'
+      rcases h' with ⟨a, b⟩
+      by_contra c
+      have m_non_zero : m ≠ 0 := by
+        exact Nat.ne_zero_of_lt a
+      have exists_in_A : ∃ i, m = A i := by
+        apply no_missed_vals m ⟨m_non_zero, c⟩
+      rcases exists_in_A with ⟨i, hi⟩
+      rw [hi] at b
+      have A_zero_lt_other : ∀ i : Fin n, i > 0 → A i > A 0 := by
+        intro i' i_gt_zero
+        apply all_i_non_zero_bigger_A i' 0 i_gt_zero
+      rcases i with ⟨i, i_fin⟩
+      rcases Nat.eq_zero_or_pos i with h | h'
+      · have equal : (⟨i, i_fin⟩ : Fin n) = ⟨0, ih⟩ := by
+          exact Fin.mk.inj_iff.mpr h
+        have equal' : ⟨0, ih⟩ = (Fin.ofNat' n 0) := by
+          exact rfl
+        rw [equal, equal'] at b
+        linarith [b]
+      -- have A_i_gt_A_zero :
+      have equal' : (Fin.ofNat' n 0) = ⟨0, ih⟩ := by
+          exact rfl
+      rw [equal'] at b
+      have A_gt_zero : A ⟨i, i_fin⟩ > A ⟨0, ih⟩ := by
+        exact all_i_non_zero_bigger_A ⟨i, i_fin⟩ ⟨0, ih⟩ h'
+      linarith
+    have based_on_previous_lambda : lambdaP (A ⟨0, ih⟩ - 1) = (∏i : (Fin (A ⟨0, ih⟩ - 1)),
+      (P.Q (i) (i+1))/
+      (P.Q (i+1) (i))) * lambdaP 0:= by
+      have first_hypo : (∀ (i : ℕ), i ≠ 0 ∧ i < (A ⟨0, ih⟩) → P.Q i (i - 1) ≠ 0) := by
+        -- use A ⟨0, ih⟩
+        intro i
+        rintro ⟨h, h'⟩
+        have gt_zero : i > 0 := by
+          exact Nat.zero_lt_of_ne_zero h
+        apply no_between i ⟨gt_zero, h'⟩
+      have second_hypo : (∀i, i < (A ⟨0, ih⟩) → P.Q i (i+1) ≠ 0) := by
+        -- use A ⟨0, ih⟩
+        intro i
+        intro h
+        apply pos_arrival i
+
+      have A_sub_one_lt_A : (A ⟨0, ih⟩) - 1 < (A ⟨0, ih⟩) := by
+        rcases Nat.eq_zero_or_pos (A ⟨0, ih⟩) with h' | h'
+        · contradiction
+        exact Nat.sub_one_lt_of_lt h'
+
+        -- rintro ⟨h, h'⟩
+
+      apply lemma2_3_3a' P lambdaP h'' (A ⟨0, ih⟩) ⟨first_hypo, second_hypo⟩ (A ⟨0, ih⟩ -1) A_sub_one_lt_A
+    rcases Nat.eq_zero_or_pos (A ⟨0, ih⟩ - 1) with hypo | hypo
+    · rw [hypo] at based_on_previous_lambda
+      -- have equal : ∏ i : Fin 0, P.Q (↑i) (↑i + 1) / P.Q (↑i + 1) ↑i = ∏ i ∈ Finset.range 0, P.Q (↑i) (↑i + 1) / P.Q (↑i + 1) ↑i := by
+      --   exact rfl
+      rw [hypo]
+      rcases h'' with ⟨h₁'', h₁''', h₁''''⟩
+      have hypo'' : A ⟨0, ih⟩ ≤ 1 := by
+        exact Nat.le_of_sub_eq_zero hypo
+      -- have hypo' : A ⟨0, ih⟩ = 0 ∨ A ⟨0, ih⟩ = 1 := by
+      --   exact Nat.le_one_iff_eq_zero_or_eq_one.mp hypo''
+      have hypo''' : A ⟨0, ih⟩ = 1 := by
+        rcases (lt_trichotomy (A ⟨0, ih⟩) 1) with a | b | c
+        · have d : A ⟨0, ih⟩ = 0 := by
+            linarith
+          contradiction
+        · assumption
+        linarith
+      have hypo'''' : P.Q (A ⟨0, ih⟩) (A ⟨0, ih⟩-1) = 0 := by
+        rcases (lt_trichotomy n 1) with a | b | c
+        · linarith
+        · have equal : mycast'(n,n_non_zero,Fin.last (n-1)) = ⟨0, ih⟩ := by
+            have equal : mycast'(n,n_non_zero,Fin.last (n-1)) = mycast'(n,n_non_zero,Fin.last (0)) := by
+              refine (Fin.cast_inj (n_sub_one_add_one_eq_n n n_non_zero)).mpr ?_
+              rw [b]
+              have one_sub_one_eq_zero : 1-(1 : ℕ)=0 := by
+                exact rfl
+              rw [one_sub_one_eq_zero]
+              -- rw [sub_self 1]
+              exact rfl
+            have equal' : Fin.last (0) = 0 := by
+              -- rw [b]
+              -- have one_sub_one_eq_zero : 1-(1 : ℕ)=0 := by
+              --   exact rfl
+              -- rw [one_sub_one_eq_zero]
+              exact rfl
+            have equal''' : mycast'(n,n_non_zero,(Fin.last (0) : Fin (n-1+1))) = mycast'(n,n_non_zero,0) := by
+              rw [equal']
+              exact rfl
+            have equal'''' : mycast'(n,n_non_zero,0) = 0 := by
+              exact rfl
+            rw [equal, equal''', equal'''']
+            exact rfl
+          rw [equal] at Indices_props
+          apply Indices_props.right
+        have zero_lt_n_sub_one : 0 < n -1 := by
+          exact Nat.zero_lt_sub_of_lt c
+        apply (Indices_props.left 0 zero_lt_n_sub_one).left non_zero_A
+      rw [hypo, hypo'''] at hypo''''
+      rw [hypo''''] at h₁'''
+      ring_nf at h₁'''
+      have two_options : P.Q 0 1 = 0 ∨ lambdaP 0 = 0 := by
+        exact mul_eq_zero.mp (id (Eq.symm h₁'''))
+      rcases two_options with h_ | h_
+      · have pos_arrival' : P.Q 0 (0+1) ≠ 0 := by
+          apply pos_arrival 0
+        contradiction
+      assumption
+    have nice_rewrite : lambdaP (A ⟨0, ih⟩ - 1) = (P.Q (A ⟨0, ih⟩ - 2) (A ⟨0, ih⟩ - 1)) * lambdaP (A ⟨0, ih⟩ - 2) / ((P.Q (A ⟨0, ih⟩ - 1) (A ⟨0, ih⟩)) + (P.Q (A ⟨0, ih⟩ - 1) (A ⟨0, ih⟩ - 2))) := by
+      rcases h'' with ⟨h'', h''', h''''⟩
+      have semi_nice_rewrite : ((P.Q (A ⟨0, ih⟩ - 1) (A ⟨0, ih⟩)) + (P.Q (A ⟨0, ih⟩ - 1) (A ⟨0, ih⟩ - 2))) * lambdaP (A ⟨0, ih⟩ - 1) = (P.Q (A ⟨0, ih⟩ - 2) (A ⟨0, ih⟩ - 1)) * lambdaP (A ⟨0, ih⟩ - 2) := by
+        rw [←add_zero ((P.Q (A ⟨0, ih⟩ - 2) (A ⟨0, ih⟩ - 1)) * lambdaP (A ⟨0, ih⟩ - 2))]
+        rw [←zero_mul (lambdaP (A ⟨0, ih⟩))]
+        rcases (lt_trichotomy n 1) with a | b | c
+        · linarith
+        · have equal : mycast'(n,n_non_zero,Fin.last (n-1)) = ⟨0, ih⟩ := by
+            have equal : mycast'(n,n_non_zero,Fin.last (n-1)) = mycast'(n,n_non_zero,Fin.last (0)) := by
+              refine (Fin.cast_inj (n_sub_one_add_one_eq_n n n_non_zero)).mpr ?_
+              rw [b]
+              have one_sub_one_eq_zero : 1-(1 : ℕ)=0 := by
+                exact rfl
+              rw [one_sub_one_eq_zero]
+              -- rw [sub_self 1]
+              exact rfl
+            have equal' : Fin.last (0) = 0 := by
+              -- rw [b]
+              -- have one_sub_one_eq_zero : 1-(1 : ℕ)=0 := by
+              --   exact rfl
+              -- rw [one_sub_one_eq_zero]
+              exact rfl
+            have equal''' : mycast'(n,n_non_zero,(Fin.last (0) : Fin (n-1+1))) = mycast'(n,n_non_zero,0) := by
+              rw [equal']
+              exact rfl
+            have equal'''' : mycast'(n,n_non_zero,0) = 0 := by
+              exact rfl
+            rw [equal, equal''', equal'''']
+            exact rfl
+          rw [equal] at Indices_props
+          rw [←Indices_props.right]
+          symm
+          rw [mul_comm]
+          nth_rewrite 2 [mul_comm]
+          -- nth_rewrite 3 [mul_comm]
+          have goal : lambdaP (A ⟨0, ih⟩ - 1 - 1) * P.Q (A ⟨0, ih⟩ - 1 - 1) (A ⟨0, ih⟩ - 1) +
+                      lambdaP (A ⟨0, ih⟩ - 1 + 1) * P.Q (A ⟨0, ih⟩ - 1 + 1) (A ⟨0, ih⟩ - 1) =
+                      (P.Q (A ⟨0, ih⟩ - 1) (A ⟨0, ih⟩ - 1 + 1) + P.Q (A ⟨0, ih⟩ - 1) (A ⟨0, ih⟩ - 1 - 1)) * lambdaP (A ⟨0, ih⟩ - 1) := by
+            apply h'' (A ⟨0, ih⟩-1)
+          have helper: A ⟨0, ih⟩ - 1 - 1 = A ⟨0, ih⟩ - 2 := by
+            exact rfl
+          rw [helper] at goal
+          have helper': A ⟨0, ih⟩ - 1 + 1 = A ⟨0, ih⟩ := by
+            exact n_sub_one_add_one_eq_n (A ⟨0, ih⟩) non_zero_A
+          rw [helper'] at goal
+          assumption
+        have zero_lt_n_sub_one : 0 < n-1 := by
+          exact Nat.zero_lt_sub_of_lt c
+        rw [←(Indices_props.left 0 zero_lt_n_sub_one).left]
+        symm
+        nth_rewrite 1 [mul_comm]
+        nth_rewrite 2 [mul_comm]
+        have A_non_zero : A ⟨0, ih⟩ - 1 ≠ 0 := by
+          exact Ne.symm (Nat.ne_of_lt hypo)
+        have goal: lambdaP (A ⟨0, ih⟩ - 1 - 1) * P.Q (A ⟨0, ih⟩ - 1 - 1) (A ⟨0, ih⟩ - 1) +
+            lambdaP (A ⟨0, ih⟩ - 1 + 1) * P.Q (A ⟨0, ih⟩ - 1 + 1) (A ⟨0, ih⟩ - 1) =
+        (P.Q (A ⟨0, ih⟩ - 1) (A ⟨0, ih⟩ - 1 + 1) + P.Q (A ⟨0, ih⟩ - 1) (A ⟨0, ih⟩ - 1 - 1)) * lambdaP (A ⟨0, ih⟩ - 1) := by
+          apply h'' (A ⟨0, ih⟩-1) A_non_zero
+        have helper: A ⟨0, ih⟩ - 1 - 1 = A ⟨0, ih⟩ - 2 := by
+            exact rfl
+        rw [helper] at goal
+        have helper': A ⟨0, ih⟩ - 1 + 1 = A ⟨0, ih⟩ := by
+          exact n_sub_one_add_one_eq_n (A ⟨0, ih⟩) non_zero_A
+        rw [helper'] at goal
+        assumption
+        apply non_zero_A
+
+
+
+          -- rw [add_comm]
+
+            -- exact rfl
+
+            -- refine Fin.eq_mk_iff_val_eq.mpr ?_
+            -- refine Fin.val_eq_zero_iff.mpr ?_
+            -- apply?
+
+            -- rw [mycast']
+            -- apply?
+            -- rw [← equal']
+
+            -- have equal'' : mycast'(n,n_non_zero,Fin.last (0)) = ⟨0, ih⟩ := by
+            --   rw []
+
+
+
+          -- apply Indices_props.right
+
+
+        -- refine Nat.le_one_iff_eq_zero_or_eq_one.mp ?_ (A ⟨0, ih⟩)
+        -- exact Nat.le_of_sub_eq_zero h
+        -- apply?
+      -- rw [equal]
+
+
+        -- apply Finset.prod_range_zero
+      -- rw [equal]
+      -- apply Finset.prod_range_zero
+    -- have prev_lambda : lambdaP (A ⟨0, ih⟩ - 1) = lambdaP (A ⟨0, ih⟩ - 1) := by
+
+
+
+      -- apply i at A_zero_lt_other
+      -- apply
+      -- by_contra c
+      -- apply no_missed_vals
+
+
+  -- · have no_between : (¬∃m : ℕ, m ≠ 0 ∧ m < (A (Fin.ofNat' n 0)) → P.Q m (m-1) = 0) := by
+  --     refine not_exists.mpr ?_
+  --     intro x
+  --     by_contra h'
+  --     apply no_missed_vals
+  --     use x
+
+      -- apply not_exists.mpr ?_ at no_missed_vals
+
+
+      -- push_neg at no_missed_vals
+      -- push_neg
+      -- intro m
+      -- by_contra h''
+      -- apply no_missed_vals
+
+
+      -- push_neg
+      -- intro m
+
+
+      -- constructor
+      -- ·
 
 
 
@@ -711,47 +1293,38 @@ lemma lemma2_3_3a (P : RateMatrix) (lambdaP : ℕ → ℝ) (h :InvariantDistribu
 
 
 
+  -- simp at Indices_props
+
+  -- sorry
+--   intro i ⟨a, b⟩
+--   induction' i with i ih
+--   · have zero_in_rhs : (∀ x, x ∈ A → (x ∈ {n : ℕ // n ≠ 0 ∧ P.Q n (n-1) = 0})) := by
+      -- intro x h
+      -- have hypo : x ∈ {n : ℕ // n ≠ 0 ∧ P.Q n (n-1) = 0} := by
+      --   apply?
+      -- rw [A']
+
+
+
+      -- rw [←A']
 
 
 
 
-    -- repeat rw [mul_assoc]
-    -- rw [mul_assoc]
+  --  at a
+
+  -- rintro h' at ⟨⟩
+  -- by_contra
+  sorry
 
 
 
-
-
-  -- rw [Finset.prod_range_succ (fun i ↦ P.Q (i + n) (i + n + 1) / P.Q (i + n + 1) (i + n)) (k'-n + 1)]
-
-
-
-
-  -- rw [ih]
-    -- apply lt_trans
-  -- apply ih (linarith [m_gt_n])
-
-
-    -- have zero_sub_n_eq_zero : 0-n = 0 := by
-    --   exact Nat.zero_sub n
-    -- have h'' : (∏ i : (Fin (0-n)), P.Q (↑i + n) (↑i + n + 1) / P.Q (↑i + n + 1) (↑i + n)) = (∏ i ∈ Finset.range (0), P.Q (↑i + n) (↑i + n + 1) / P.Q (↑i + n + 1) (↑i + n)) := by
-    --   rw [zero_sub_n_eq_zero]
-    --   -- simp
-    --   exact rfl
-    -- rw [h'']
-    -- have h''' : (∏ i ∈ Finset.range 0, P.Q (i + n) (i + n + 1) / P.Q (i + n + 1) (i + n)) = 1 := by
-    --   apply Finset.prod_range_zero (fun i : ℕ => P.Q (i + n) (i + n + 1) / P.Q (i + n + 1) (i + n))
-    -- rw [h''']
-    -- have h'''' : k - n = 0 := by
-    --   apply?
-    -- ring_nf!
-
-
-
-
+-- Prove this later
 lemma lemma2_3_3 (P : RateMatrix) (lambdaP : ℕ → ℝ) (h :InvariantDistribution P lambdaP) (A : Finset {n : ℕ // n ≠ 0 ∧ P.Q n (n-1) = 0})
-  (Nonemptyset : A.Nonempty) :
+  (Nonemptyset : A.Nonempty):
   ∀i : ℕ, i < A.max' Nonemptyset → lambdaP i = 0 := by
+  sorry
+
   induction' n ∈ A with a b
 
 

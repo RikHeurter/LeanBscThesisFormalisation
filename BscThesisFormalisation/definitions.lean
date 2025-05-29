@@ -26,8 +26,8 @@ structure RateMatrix where
   sum_eq_zero_at_zero : Q 0 1 = -(Q 0 0)
   sum_eq_zero_at_non_zero : ∀ n, n ≠ 0 → (Q n (n+1)) + (Q n (n-1)) = -(Q n n)
   non_nbr_eq_zero : ∀n, ∀k, k ≥ n + 2 → (Q n k) = 0 ∧ (Q k n) = 0
-  arrival_rate_greater_than_zero : ∀ n, 0 ≤ (Q n (n+1))
-  departure_rate_greater_than_zero : ∀ n, n ≠ 0 → 0 ≤ (Q (n+1) n)
+  arrival_rate_non_neg : ∀ n, 0 ≤ (Q n (n+1))
+  departure_rate_non_neg : ∀ n, 0 ≤ (Q (n+1) n)
   -- Q_pos_neg_eq_pos_pos : ∀i, i ≥ 0 → ∀j, j < 0 → Q i j = Q i -j
   -- TODO: Prove this later on.
 -- variable (n : ℕ ) (s : Euclidean Space ℝ  (Fin n)) (distributionpolicy: ℕ → ℕ)

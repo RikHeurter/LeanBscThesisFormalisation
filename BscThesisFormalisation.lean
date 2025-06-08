@@ -1,4 +1,5 @@
 import BscThesisFormalisation.definitions
 import BscThesisFormalisation.lemma2_1
+import BscThesisFormalisation.identities
 import BscThesisFormalisation.lemma2_3
 import BscThesisFormalisation.theorem2_2

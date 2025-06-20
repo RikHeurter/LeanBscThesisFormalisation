@@ -5,8 +5,11 @@ Sublinear
 SpeedUpFunction
 RateMatrix
 InvariantDistribution
-MRTSequence
-MeanResponseTimePolicy
+MeanResponseTime
 Policy
 SchedulePolicy
 lemma2_1
+lemma2_3_1
+lemma2_3_3
+lemma2_3_3a
+lemma2_3_3

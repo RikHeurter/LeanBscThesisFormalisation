@@ -30,13 +30,13 @@ sides and can prove that $\mu_k \leq \lambda_k$.
 
 
 We will first describe the invariant distribution in terms of $\lambda_0$ if there are no rates which equal zero:
-\begin{lemma}\label{lem:InvariantDistributionValue}\uses{def:SchedulePolicy}
+\begin{lemma}\label{lem:InvariantDistributionValue}\uses{def:SchedulePolicy}\lean{lemma2_3_1}\leanok
   The invariant distribution of a scheduling policy whose rate is never $0$ is of the form:
   $$\left(\prod_{i=1}^{n} \frac{\Lambda}{a_i}\right)\lambda_0$$
   at index $n$
 \end{lemma}
 
-\begin{proof}\uses{def:InvariantDistribution}
+\begin{proof}\uses{def:InvariantDistribution}\leanok
   This comes down to just using the detailed balance property of the invariant distribution and using induction
   specifically:
   \textbf{Base case}: $n = 0$ clearly $\lambda_0 = \lambda_0$.
@@ -99,7 +99,7 @@ Then we can describe how it is normalised.
 \subsection{Non-negative distribution values}
 We first will need to show that if there are unreachable states in the queue that the invariant
 distribution is zero there, or more concretely:
-\begin{lemma}\label{lem:UnreachableInvariantDistribution}
+\begin{lemma}\label{lem:UnreachableInvariantDistribution}\lean{lemma2_3_3}
   If there exists unique $n \in \mathbb{N}$ such that the departure rate is $0$ at state $n$ then $\forall
   i < n$ the invariant distribution has value $0$ for state $i$.
 \end{lemma}
@@ -143,7 +143,7 @@ distribution is zero there, or more concretely:
 % \end{lemma}
 
 Now we also need a lemma which will allow for shifting the general expression of the invariant distribution.
-\begin{lemma}\label{lem:ShiftedInvariantDistributionValue}\uses{def:InvariantDistribution}
+\begin{lemma}\label{lem:ShiftedInvariantDistributionValue}\uses{def:InvariantDistribution}\lean{lemma2_3_3a}\leanok
   Suppose we have an index $n$ s.t. we know that $\lambda_i = 0$ for all $i < n$, and furthermore
   that the departurerate at index $n$ is $0$. And we also know that $\exists m > n \in \mathbb{N}$ s.t
   $\forall k \in \mathbb{N}$ with $m \geq k > n$
@@ -158,7 +158,7 @@ Now we also need a lemma which will allow for shifting the general expression of
 \end{proof}
 
 % Then we get the highest such values to allow for nice induction.
-\begin{lemma}\label{lem:MaxUnreachableInvariance}\uses{lem:UnreachableInvariantDistribution}
+\begin{lemma}\label{lem:MaxUnreachableInvariance}\uses{lem:UnreachableInvariantDistribution}\lean{lemma2_3_3}
   If there exists finite $A \subsetneq \mathbb{N}$ such that for all $n \in A$ the departure rate at
   state $n$ is zero and there exists no $n \notin A$ with departurerate $0$.
   Then the invariant distribution has value $0$ at $i < \max(A)$.

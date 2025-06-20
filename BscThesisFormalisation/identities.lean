@@ -46,7 +46,7 @@ example (a b c : ℝ) (h : c > 0) (h' : b > 0): (a/(b+c) = a/b)→ a = 0 := by
     exact mul_eq_zero.mp helper'
   have helper''' : b - (b + c) ≠ 0 := by
     rw [sub_eq_add_neg]
-    simp
+    simp only [neg_add_rev, add_neg_cancel_comm_assoc, ne_eq, neg_eq_zero]
     assumption
   rcases helper'' with hypo | hypo
   · assumption
@@ -172,7 +172,8 @@ example (n : ℕ) : ∑ i ∈ Finset.Icc 1 n, i = n * (n + 1) / 2 := by
   apply Nat.eq_div_of_cast_eq_div -- reduce to easier question about rationals
   push_cast
   induction' n with n ih
-  · simp
+  · simp only [Nat.lt_one_iff, pos_of_gt, Finset.Icc_eq_empty_of_lt, Finset.sum_empty,
+    CharP.cast_eq_zero, zero_add, mul_one, zero_div]
   rw [Finset.sum_Icc_succ_top (by omega), ih]
   push_cast
   ring
@@ -224,7 +225,7 @@ lemma lemma2_3_1 (P : RateMatrix) (lambdaP : ℕ → ℝ) : (InvariantDistributi
     rw [Finset.prod_range_zero]
     ring
   rw [succ_range]
-  simp [h''''']
+  simp only [zero_add, h''''']
 
   -- Start of ih proof
   rcases h₁ with ⟨h₁, h₁', h₁''⟩
@@ -331,7 +332,7 @@ example (n m : ℕ) : n = m ∨ n ≠ m := by
   exact eq_or_ne n m
 
 lemma lemma2_3_3a' (P : RateMatrix) (lambdaP : ℕ → ℝ) : (InvariantDistribution P lambdaP) →
-  -- (∃ k : ℕ, ∀i, i ≠ 0 ∧ i < k → P.Q i (i-1) ≠ 0) → (∃ k : ℕ, ∀i, i < k → P.Q i (i+1) ≠ 0) →
+  -- (∃ k : ℕ, ∀i, i ≠ 0 ∧ i < k → P.Q i (i-1)   ≠ 0) → (∃ k : ℕ, ∀i, i < k → P.Q i (i+1) ≠ 0) →
   ∀k : ℕ, (∀i, i ≠ 0 ∧ i < k → P.Q i (i-1) ≠ 0) ∧ (∀i, i < k → P.Q i (i+1) ≠ 0)→ ∀ n, n < k →
    lambdaP n = (∏ i : (Fin n), (P.Q i (i+1))/(P.Q (i + 1) i)) * (lambdaP 0) := by
   intro h₁ k
@@ -418,7 +419,7 @@ lemma lemma2_3_3a' (P : RateMatrix) (lambdaP : ℕ → ℝ) : (InvariantDistribu
     rw [Finset.prod_range_zero]
     ring
   rw [succ_range]
-  simp [h''''']
+  simp only [zero_add, h''''']
 
   -- Start of ih proof
   -- rcases h₁ with ⟨h₁, h₁', h₁''⟩
@@ -612,14 +613,14 @@ lemma lemma2_3_3a (P : RateMatrix) (lambdaP : ℕ → ℝ) (h :InvariantDistribu
     have cases'' : m' + 1 > n → (m' = n ∨ m' > n) := by
       · intro h
         apply (fun a ↦ Nat.le_of_lt_succ a) at h
-        simp
+        simp only [gt_iff_lt]
         apply LE.le.eq_or_gt h
 
     have cases''' : (m' + 1 < n ∨ m' + 1 = n) ∨ m' + 1 > n → (m' + 1 < n ∨ m' + 1 = n) ∨ (m' = n ∨ m' > n) := by
       intro h
       exact Or.symm (Or.imp_left cases'' (id (Or.symm cases')))
     refine or_assoc.mp ?_
-    simp
+    simp only [Nat.add_left_inj, gt_iff_lt, add_lt_add_iff_right]
     apply cases'''
     exact cases'
 
@@ -640,7 +641,7 @@ lemma lemma2_3_3a (P : RateMatrix) (lambdaP : ℕ → ℝ) (h :InvariantDistribu
         ring
       rw [hypo]
       rw [mp_add_one_eq_n]
-      ring
+      ring_nf
       omega
     rw [hypo]
     have hypo' : (∏ i : Fin (1), P.Q (↑i + n) (↑i + n + 1) / P.Q (↑i + n + 1) (↑i + n)) = (∏ i ∈ Finset.range (1), P.Q (↑i + n) (↑i + n + 1) / P.Q (↑i + n + 1) (↑i + n)) := by
@@ -653,7 +654,7 @@ lemma lemma2_3_3a (P : RateMatrix) (lambdaP : ℕ → ℝ) (h :InvariantDistribu
       exact Nat.eq_sub_of_add_eq mp_add_one_eq_n
     rw [hypo'']
     rw [lambda_n_zero]
-    simp
+    simp only [mul_zero, sub_zero, zero_add, one_mul]
     have hypo''' : n - 1 + 1 = n := by
       exact Nat.succ_pred_eq_of_ne_zero n_non_zero
     rw [hypo''']
@@ -678,7 +679,7 @@ lemma lemma2_3_3a (P : RateMatrix) (lambdaP : ℕ → ℝ) (h :InvariantDistribu
     have mp_between : n < m' + 2 ∧ m' + 2 < k := by
       exact ⟨mp_gt_n, mp_le_k⟩
     apply non_zero_P (m'+2) mp_between
-  · simp at mp_add_one_eq_n_add_one
+  · simp only [Nat.add_left_inj] at mp_add_one_eq_n_add_one
     have hypo : m' + 2- n = 2 := by
       rw [mp_add_one_eq_n_add_one]
       exact Nat.add_sub_self_left n 2
@@ -709,7 +710,7 @@ lemma lemma2_3_3a (P : RateMatrix) (lambdaP : ℕ → ℝ) (h :InvariantDistribu
     rw [hypo''']
     repeat rw [Finset.prod_range_succ]
     rw [Finset.prod_range_zero]
-    simp
+    simp only [zero_add, one_mul]
     have hypo1 : ((P.Q (n + 1) n + P.Q (n + 1) (n + 2)) * (P.Q n (n + 1) / P.Q (n + 1) n * lambdaP n) - P.Q n (n + 1) * lambdaP n) / P.Q (n + 2) (n + 1) = lambdaP n * (((P.Q (n + 1) n + P.Q (n + 1) (n + 2)) * (P.Q n (n + 1) / P.Q (n + 1) n) - P.Q n (n + 1)) / P.Q (n + 2) (n + 1)) := by
       nth_rewrite 1 [mul_comm]
       repeat rw [←mul_assoc]
@@ -800,7 +801,7 @@ lemma lemma2_3_3a (P : RateMatrix) (lambdaP : ℕ → ℝ) (h :InvariantDistribu
       exact Nat.succ_lt_succ_iff.mp mp_add_one_gt_n_add_one
     have h' : n ≤ m' := by
       exact Nat.le_of_succ_le h''
-    ring
+    ring_nf
     rw [Nat.add_sub_assoc h']
   rw [mp_add_one_sub_n_eq_mp_sub_n_add_one]
   rw [Finset.prod_range_succ]
@@ -810,7 +811,7 @@ lemma lemma2_3_3a (P : RateMatrix) (lambdaP : ℕ → ℝ) (h :InvariantDistribu
       exact Nat.succ_lt_succ_iff.mp mp_add_one_gt_n_add_one
     have h' : n ≤ m' := by
       exact Nat.le_of_succ_le h''
-    ring
+    ring_nf
     rw [Nat.add_sub_assoc h']
   rw [mp_add_two_sub_n_eq_mp_sub_n_add_two]
   rw [Finset.prod_range_succ]
@@ -1438,7 +1439,7 @@ lemma lemma2_3_3b (P : RateMatrix) (lambdaP : ℕ → ℝ) (h'' :InvariantDistri
           exact mul_eq_zero.mp helper'
         have helper''' : b - (b + c) ≠ 0 := by
           rw [sub_eq_add_neg]
-          simp
+          simp only [neg_add_rev, add_neg_cancel_comm_assoc, ne_eq, neg_eq_zero]
           exact c_non_zero
         rcases helper'' with hypo | hypo
         · exact hypo
@@ -1685,7 +1686,7 @@ lemma lemma2_3_3b (P : RateMatrix) (lambdaP : ℕ → ℝ) (h'' :InvariantDistri
     rw [←helper] at inequality
     rw [←b] at inequality
     rw [Indices_props.right (i+1) ih non_zero_A] at inequality
-    simp at inequality
+    simp only [zero_mul, add_zero, mul_zero, sub_zero, zero_eq_mul] at inequality
     symm at inequality
     rcases inequality with h | j
     · exact h
@@ -1970,7 +1971,6 @@ lemma lemma2_3_3b (P : RateMatrix) (lambdaP : ℕ → ℝ) (h'' :InvariantDistri
     rw [helper'] at helper''
     exact lt_of_le_of_ne helper'' (id (Ne.symm helper))
 
-  -- Comment this out when the all the lemmas are setup to do the thing :)
   have helper_lemma' (a b c : ℝ) (h : c > 0) (h' : b > 0): (a/(b+c) = a/b)→ a = 0 := by
         intro h''
         have c_non_zero : c ≠ 0 := by
@@ -1994,7 +1994,7 @@ lemma lemma2_3_3b (P : RateMatrix) (lambdaP : ℕ → ℝ) (h'' :InvariantDistri
           exact mul_eq_zero.mp helper'
         have helper''' : b - (b + c) ≠ 0 := by
           rw [sub_eq_add_neg]
-          simp
+          simp only [neg_add_rev, add_neg_cancel_comm_assoc, ne_eq, neg_eq_zero]
           exact c_non_zero
         rcases helper'' with hypo | hypo
         · exact hypo
@@ -2175,13 +2175,13 @@ lemma lemma2_3_3c (P : RateMatrix) (lambdaP : ℕ → ℝ) (h'' :InvariantDistri
     rcases based_on_previous_lambda with h' | h'
     · apply Finset.prod_eq_zero_iff.mp at h'
       rcases h' with ⟨a, ⟨a_triv_fin, non_zero_dep⟩⟩
-      simp at non_zero_dep
+      simp only [Fin.mk_zero', div_eq_zero_iff] at non_zero_dep
       rcases non_zero_dep with h''' | h'''
       · have non_zero_a : P.Q (↑a) (↑a + 1) ≠ 0 := by
           apply non_zero_arrival_rate a
         contradiction
       rcases a with ⟨a, a_fin⟩
-      simp at a_triv_fin
+      simp only [Fin.mk_zero', Finset.mem_univ] at a_triv_fin
       have a_add_one_lt_A_appl_zero : a + 1 < A ⟨0, ih⟩ := by
         exact Nat.add_lt_of_lt_sub a_fin
       have a_gt_zero : a + 1 > 0 := by
@@ -2255,18 +2255,18 @@ lemma lemma2_3_3c (P : RateMatrix) (lambdaP : ℕ → ℝ) (h'' :InvariantDistri
 
       apply lemma2_3_3a' P lambdaP h'' (A ⟨1, c⟩) ⟨first_hypo, second_hypo⟩ (A ⟨1, c⟩ -1) A_sub_one_lt_A
     rw [zero_val] at nice_equality
-    -- simp at nice_equality
+    -- simp? at nice_equality
     symm at nice_equality
     apply mul_eq_zero.mp at nice_equality
     rcases nice_equality with h' | h'
     · apply Finset.prod_eq_zero_iff.mp at h'
       rcases h' with ⟨⟨a, a_fin⟩, ⟨a_triv_fin, non_zero_dep⟩⟩
-      simp at non_zero_dep
+      simp only [div_eq_zero_iff] at non_zero_dep
       rcases non_zero_dep with h''' | h'''
       · have non_zero_a : P.Q (↑a) (↑a + 1) ≠ 0 := by
           apply non_zero_arrival_rate a
         contradiction
-      simp at a_triv_fin
+      simp only [Finset.mem_univ] at a_triv_fin
       have a_add_one_lt_A_appl_zero : a + 1 < A ⟨1, c⟩ := by
         exact Nat.add_lt_of_lt_sub a_fin
       have a_gt_zero : a + 1 > 0 := by
@@ -2308,12 +2308,12 @@ lemma lemma2_3_3c (P : RateMatrix) (lambdaP : ℕ → ℝ) (h'' :InvariantDistri
   rcases based_on_previous_lambda with h' | h'
   · apply Finset.prod_eq_zero_iff.mp at h'
     rcases h' with ⟨⟨a, a_fin⟩, ⟨a_triv_fin, non_zero_dep⟩⟩
-    simp at non_zero_dep
+    simp only [div_eq_zero_iff] at non_zero_dep
     rcases non_zero_dep with h''' | h'''
     · have non_zero_a : P.Q (↑a) (↑a + 1) ≠ 0 := by
         apply non_zero_arrival_rate a
       contradiction
-    simp at a_triv_fin
+    simp only [Fin.mk_zero', Finset.mem_univ] at a_triv_fin
     have a_add_one_lt_A_appl_zero : a + 1 < A ⟨0, ih⟩ := by
       exact Nat.add_lt_of_lt_sub a_fin
     have a_gt_zero : a + 1 > 0 := by
@@ -2360,10 +2360,10 @@ lemma lemma2_3_3d (P : RateMatrix) (lambdaP : ℕ → ℝ) (h'' :InvariantDistri
       rw [ifin_eq_one_fin] at i_non_zero
     -- have one_fin_eq_const : (1 : Fin n) = ⟨1, one_lt_n⟩ := by
     have nice_equality : (Fin.subNat 1 (⟨i, ifin⟩ : Fin n).castSucc i_non_zero) = (Fin.subNat 1 (⟨1, one_lt_n⟩ : Fin n).castSucc i_cast_corrected) := by
-      simp
+      simp only [Fin.castSucc_mk, Fin.subNat_mk, tsub_self, Fin.mk_zero', Fin.mk_eq_zero]
       rw [b]
     rw [nice_equality]
-    simp
+    simp only [Fin.castSucc_mk, Fin.subNat_mk, tsub_self, Fin.mk_zero']
     have all_i_non_zero_bigger_A : ∀ i : (Fin n), ∀ j : (Fin n), i > j → A i > (A j) := by
       apply monotonically_increasing_imp_smaller n A Indices_props.left
     rcases (Nat.eq_zero_or_pos (A ⟨0, zero_lt_n⟩)) with h₀ | h₀
@@ -2372,7 +2372,7 @@ lemma lemma2_3_3d (P : RateMatrix) (lambdaP : ℕ → ℝ) (h'' :InvariantDistri
           exact all_i_non_zero_bigger_A ⟨1, one_lt_n⟩ ⟨0, zero_lt_n⟩ i_cast_corrected
         rw [h₀] at helper
         exact Nat.ne_zero_of_lt helper
-      simp at h₀
+      simp only [Fin.mk_zero'] at h₀
       rw [h₀]
       have helper : ∃i, A i ≠ 0 := by
         use ⟨i, ifin⟩
@@ -2381,10 +2381,10 @@ lemma lemma2_3_3d (P : RateMatrix) (lambdaP : ℕ → ℝ) (h'' :InvariantDistri
       apply lemma2_3_3c P lambdaP h'' n n_non_zero A Indices_props non_zero_arrival_rate no_missed_vals helper
     have A_appl_zero_neq_zero : A ⟨0, zero_lt_n⟩ ≠ 0 := by
       exact Nat.ne_zero_of_lt h₀
-    simp at h₀
+    simp only [Fin.mk_zero', gt_iff_lt] at h₀
     have existance : ∃i, A i ≠ 0 := by
       use 0
-      simp at A_appl_zero_neq_zero
+      simp only [Fin.mk_zero', ne_eq] at A_appl_zero_neq_zero
       exact A_appl_zero_neq_zero
 
     have no_between' : (∀ m : ℕ, m > (A ⟨0, zero_lt_n⟩) ∧ m < (A ⟨1, one_lt_n⟩) → P.Q m (m-1) ≠ 0) := by
@@ -2490,12 +2490,12 @@ lemma lemma2_3_3d (P : RateMatrix) (lambdaP : ℕ → ℝ) (h'' :InvariantDistri
     rcases based_on_previous_lambda with h' | h'
     · apply Finset.prod_eq_zero_iff.mp at h'
       rcases h' with ⟨⟨a, a_fin⟩, ⟨a_triv_fin, non_zero_dep⟩⟩
-      simp at non_zero_dep
+      simp only [Fin.mk_zero', div_eq_zero_iff] at non_zero_dep
       rcases non_zero_dep with h''' | h'''
       · have non_zero_a : P.Q ↑(a + A 0) ↑(a + A 0 + 1) ≠ 0 := by
           apply non_zero_arrival_rate (a + A 0)
         contradiction
-      simp at a_triv_fin
+      simp only [Fin.mk_zero', Finset.mem_univ] at a_triv_fin
       have a_add_one_lt_A_appl_zero : a + A ⟨0, zero_lt_n⟩ + 1 < A ⟨1, one_lt_n⟩ := by
         refine Nat.add_lt_of_lt_sub ?_
         exact Nat.add_lt_of_lt_sub a_fin
@@ -2512,7 +2512,7 @@ lemma lemma2_3_3d (P : RateMatrix) (lambdaP : ℕ → ℝ) (h'' :InvariantDistri
         apply no_between' (a + A 0 + 1) ⟨a_gt_zero, a_add_one_lt_A_appl_zero⟩
       contradiction
     exact h'
-  simp
+  simp only [Fin.castSucc_mk, Fin.subNat_mk]
   have i_sub_one_lt_n : i - 1 < n := by
     exact Nat.sub_lt_of_lt ifin
   have no_between' : (∀ m : ℕ, m > (A ⟨i-1, i_sub_one_lt_n⟩) ∧ m < (A ⟨i, ifin⟩) → P.Q m (m-1) ≠ 0) := by
@@ -2644,12 +2644,12 @@ lemma lemma2_3_3d (P : RateMatrix) (lambdaP : ℕ → ℝ) (h'' :InvariantDistri
   rcases based_on_previous_lambda with h' | h'
   · apply Finset.prod_eq_zero_iff.mp at h'
     rcases h' with ⟨⟨a, a_fin⟩, ⟨a_triv_fin, non_zero_dep⟩⟩
-    simp at non_zero_dep
+    simp only [div_eq_zero_iff] at non_zero_dep
     rcases non_zero_dep with h''' | h'''
     · have non_zero_a : P.Q ↑(a + (A ⟨i - 1, i_sub_one_lt_n⟩)) ↑(a + A ⟨i - 1, i_sub_one_lt_n⟩ + 1) ≠ 0 := by
         apply non_zero_arrival_rate (a + A ⟨i - 1, i_sub_one_lt_n⟩)
       contradiction
-    simp at a_triv_fin
+    simp only [Finset.mem_univ] at a_triv_fin
     have a_add_one_lt_A_appl_zero : a + A ⟨i - 1, i_sub_one_lt_n⟩ + 1 < A ⟨i, ifin⟩ := by
       refine Nat.add_lt_of_lt_sub ?_
       exact Nat.add_lt_of_lt_sub a_fin

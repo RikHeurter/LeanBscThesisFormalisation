@@ -2,42 +2,48 @@
 
 \section{The goal}
 
-\begin{theorem}\label{thm:EQUI_optimal}\lean{EQUIOptimal}
+\begin{theorem}
+    \label{EQUI_optimal}\lean{EQUIOptimal}\leanok
     Within our model, assuming jobs are malleable, have exponentially distributed sizes,
-and all follow the same speedup function, $s$, $\mathbb{E}[T]^{EQUI} \leq \mathbb{E}[T]^P$ for any scheduling policy $P$.
+and all follow the same speed-up function, $s \colon C_c \to \mathbb{R}$, $\mathbb{E}[T]^{EQUI} \leq \mathbb{E}[T]^P$ for any scheduling policy $P$ i.e. The mean response time of EQUI is always better than any other policy $P$.
 \end{theorem}
-
-\begin{proof}\uses{lem:lemma2.1, thm:theorem2.3, def:MeanResponseTime}
-Let $P$ be a mapping policy that processes malleable jobs that can be switched between cores without overhead,
-and currently has $i$ active jobs. In every state, $i$, $P$ must decide (i) how many jobs to run,
-(ii) how to allocate the $k$ P-cores and $l$ E-cores among the $i$ jobs. Hence for some $\vec{\alpha},
-\vec{\beta}$ the rate of departures from state $i$ under P is at most
-    $$\mu \sum_{m=1}^j s(k\cdot \alpha_m, l \cdot \beta_m)$$
-with $0 < j \leq \min(i, k+l), \alpha_m + \beta_m > 0, \forall \ 1 \leq m \leq j$ and $||\alpha||_1, \leq 1, ||\beta||_1 \leq 1$. However $||\alpha||_1 < 1$ always has unused cores or core time, which is clearly suboptimal. Therefore we will assume that $||\alpha||_1 = 1 = ||\beta||_1$.\\
-Now we will upperbound the previous summation using the concavity of $s$.
-\begin{align*}
-    \frac{1}{j}\sum_{m=1}^j s (k\alpha_m, l \beta_m) &= \frac{1}{j} s(k \alpha_1, l\beta_1) + \frac{1}{j} s(k \alpha_2, l\beta_2) + \frac{1}{j}\sum_{m=3}^j s (k\alpha_m, l \beta_m)\\
-    &= \frac{2}{j}\left(\frac{1}{2} s(k \alpha_1, l\beta_1) + \frac{1}{2} s(k \alpha_2, l\beta_2)\right) + \frac{1}{j}\sum_{m=3}^j s (k\alpha_m, l \beta_m)\\
-    &\leq \frac{2}{j}\left(s(\frac{k}{2}(\alpha_1 +\alpha_2), \frac{l}{2}(\beta_1 + \beta_2))\right) + \frac{1}{j}\sum_{m=3}^j s (k\alpha_m, l \beta_m)\\
-    % REMOVE THIS
-    % &\leq \frac{2}{j}\left(s(\frac{k}{2}(\alpha_1 +\alpha_2), \frac{l}{2}(\beta_1 + \beta_2))\right) + \frac{1}{j}s (k\alpha_3, l \beta_3) + \frac{1}{j}\sum_{m=4}^j s (k\alpha_m, l \beta_m)\\
-    % &\leq \frac{2}{j}\left(s(\frac{k}{2}(\alpha_1 +\alpha_2), \frac{l}{2}(\beta_1 + \beta_2))\right) + \frac{2}{j} \frac{1}{2}s (k\alpha_3, l \beta_3) + \frac{1}{j}\sum_{m=4}^j s (k\alpha_m, l \beta_m)\\
-    % &\leq \frac{2}{j}\left(s(\frac{k}{2}(\alpha_1 +\alpha_2), \frac{l}{2}(\beta_1 + \beta_2)) + \frac{1}{2}s (k\alpha_3, l \beta_3)\right) + \frac{1}{j}\sum_{m=4}^j s (k\alpha_m, l \beta_m)\\
-    % &\leq \frac{2}{j}\left(\frac{3}{2} \frac{2}{3}s(\frac{k}{2}(\alpha_1 +\alpha_2), \frac{l}{2}(\beta_1 + \beta_2)) + \frac{3}{2} \frac{1}{3}s (k\alpha_3, l \beta_3)\right) + \frac{1}{j}\sum_{m=4}^j s (k\alpha_m, l \beta_m)\\
-    % &\leq \frac{3}{j}\left(\frac{2}{3}s(\frac{k}{2}(\alpha_1 +\alpha_2), \frac{l}{2}(\beta_1 + \beta_2)) + \frac{1}{3}s (k\alpha_3, l \beta_3)\right) + \frac{1}{j}\sum_{m=4}^j s (k\alpha_m, l \beta_m)\\
-    % &\leq \frac{3}{j}\left(s(\frac{2}{3}\frac{k}{2}(\alpha_1 +\alpha_2) + \frac{1}{3}k\alpha_3, \frac{2}{3}\frac{l}{2}(\beta_1 + \beta_2) + \frac{1}{3}l \beta_3)\right) + \frac{1}{j}\sum_{m=4}^j s (k\alpha_m, l \beta_m)\\
-    % TILL HERE
-    &\leq \dots \leq \frac{j}{j} s(\frac{1}{j}\sum_{m=1}^jk\alpha_m, \frac{1}{j}\sum_{m=1}^j l\beta_m) = s(\frac{k}{j}, \frac{l}{j})
-\end{align*}
-% $$\frac{1}{j}\sum_{m=1}^j s (k\alpha_m, l \beta_m)$$
-% we know that $$\frac{1}{j}\sum_{m=1}^j s(k\alpha_m, l\beta_m) \leq s(\frac{k}{j}, \frac{l}{j})$$
-% TODO add something about upperboundedness
-% Which follows from the concavity of $s$.
-Thus we conclude that $$\sum_{m=1}^j s(k\alpha_m, l\beta_m) \leq j\cdot s(\frac{k}{j}, \frac{l}{j}) \qquad \forall 0 < j \leq i, \forall \vec{\alpha},\vec{\beta}$$
-and thus an upperbound on P's rate of departures is $$j \cdot s \left(\frac{k}{j},\frac{l}{j}\right) \mu.$$ From lemma 2.1 it follows that $j\cdot s\left(\frac{k}{j},\frac{l}{j}\right)\mu$ is non-decreasing in $j$. And thus to obtain the optimum rate we might as well use $i$ to get an upper-bound of the form:
-$$i\cdot s\left(\frac{k}{i},\frac{l}{i}\right)\mu,$$
-Which is exactly what is achieved by the policy EQUI. Since both markov chains only differ in their departure rates we can conclude that
-$$E[N]^{EQUI} \leq E[N]^P$$
-And now we can use Little's law, which states that the mean response time is the mean number in the system / mean throughput. The mean throughput stays the same, by the stability and constant arrival rate. From this we can conclude that
-$$E[T]^{EQUI} \leq E[T]^P$$
+\emph{\noindent Note: A formal proof of this statement will follow later on. Therefore we will not focus on proving it completely rigorously right now. See: \ref{ch:blueprint-print}}
+\begin{proof}
+    The following proof is generalised from \cite[7]{10.1145/3154499}. Let $P$ be a mapping policy that processes malleable jobs that can be switched between number of allocated cores without overhead, and currently has $i$ active jobs. Recall that the rate of departures from state $i$ under policy $P$ is of the form:
+    \begin{equation*}
+    \mu \sum_{m=1}^i s(P(i,m)). \label{eq:rate_of_departures}
+    \end{equation*}
+    If, furthermore, there are indices $m$ such that $s(P(i,m)) = \vec{0}$ then we can furthermore simplify this policy to an equivalent policy $P'$ with departure rate:
+    $$\mu \sum_{m=1}^i s(P(i,m)) = \mu \sum_{m=1}^j s(P'(i,m)),$$
+    with $j$ the number of non-zero vectors for policy $P$ in state $i$.
+    \\\\
+    However, if $\sum_{m=1}^j P'(i,m) < c_k$, for some $1 \leq k \leq n$ and $c_k$ describing how many cores of type $k$ we have, then our allocation is clearly suboptimal, since we now have compute time left over. Therefore we will assume that $\sum_{m=1}^j\alpha_{m,k} = c_k$ for all $k \in \{1,\dots,n\}$.
+    \\\\
+    Now we will upper bound the previous summation using the concavity of $s$.\footnote{Formally this should be an inductive argument. However in this case the idea for the base-case, proven here, is exactly the same as the induction argument}
+    \begin{align*}
+        \frac{1}{j}\sum_{m=1}^j s (\alpha_m) &= \frac{1}{j} s(\alpha_1) + \frac{1}{j} s(\alpha_2) + \frac{1}{j}\sum_{m=3}^j s (\alpha_m)\\
+        &= \frac{2}{j}\left(\frac{1}{2} s(\alpha_1) + \frac{1}{2} s(\alpha_2)\right) + \frac{1}{j}\sum_{m=3}^j s (\alpha_m)\\
+        &\leq \frac{2}{j}s\left(\frac{1}{2} (\alpha_1 + \alpha_2)\right) + \frac{1}{j}\sum_{m=3}^j s (\alpha_m)\\
+        % REMOVE THIS
+        % &\leq \frac{2}{j}\left(s(\frac{k}{2}(\alpha_1 +\alpha_2), \frac{l}{2}(\beta_1 + \beta_2))\right) + \frac{1}{j}s (k\alpha_3, l \beta_3) + \frac{1}{j}\sum_{m=4}^j s (k\alpha_m, l \beta_m)\\
+        % &\leq \frac{2}{j}\left(s(\frac{k}{2}(\alpha_1 +\alpha_2), \frac{l}{2}(\beta_1 + \beta_2))\right) + \frac{2}{j} \frac{1}{2}s (k\alpha_3, l \beta_3) + \frac{1}{j}\sum_{m=4}^j s (k\alpha_m, l \beta_m)\\
+        % &\leq \frac{2}{j}\left(s(\frac{k}{2}(\alpha_1 +\alpha_2), \frac{l}{2}(\beta_1 + \beta_2)) + \frac{1}{2}s (k\alpha_3, l \beta_3)\right) + \frac{1}{j}\sum_{m=4}^j s (k\alpha_m, l \beta_m)\\
+        % &\leq \frac{2}{j}\left(\frac{3}{2} \frac{2}{3}s(\frac{k}{2}(\alpha_1 +\alpha_2), \frac{l}{2}(\beta_1 + \beta_2)) + \frac{3}{2} \frac{1}{3}s (k\alpha_3, l \beta_3)\right) + \frac{1}{j}\sum_{m=4}^j s (k\alpha_m, l \beta_m)\\
+        % &\leq \frac{3}{j}\left(\frac{2}{3}s(\frac{k}{2}(\alpha_1 +\alpha_2), \frac{l}{2}(\beta_1 + \beta_2)) + \frac{1}{3}s (k\alpha_3, l \beta_3)\right) + \frac{1}{j}\sum_{m=4}^j s (k\alpha_m, l \beta_m)\\
+        % &\leq \frac{3}{j}\left(s(\frac{2}{3}\frac{k}{2}(\alpha_1 +\alpha_2) + \frac{1}{3}k\alpha_3, \frac{2}{3}\frac{l}{2}(\beta_1 + \beta_2) + \frac{1}{3}l \beta_3)\right) + \frac{1}{j}\sum_{m=4}^j s (k\alpha_m, l \beta_m)\\
+        % TILL HERE
+        &\leq \dots \leq \frac{j}{j} s(\frac{1}{j} \sum_{m=1}^j\alpha_m) = s(\frac{c}{j})
+    \end{align*}
+    % $$\frac{1}{j}\sum_{m=1}^j s (k\alpha_m, l \beta_m)$$
+    % we know that $$\frac{1}{j}\sum_{m=1}^j s(k\alpha_m, l\beta_m) \leq s(\frac{k}{j}, \frac{l}{j})$$
+    % TODO add something about upperboundedness
+    % Which follows from the concavity of $s$.
+    Therefore we conclude that $$\sum_{m=1}^j s (\alpha_m) \leq j\cdot s(\frac{c}{j}) \qquad \forall 0 < j \leq i, \forall \{\alpha\}_{m=1}^j$$
+    Thus an upper bound on P's rate of departures is $$j\cdot s(\frac{c}{j}) \mu.$$ From \autoref{thm:lemma_2_1} it follows that $j\cdot s(\frac{c}{j}) \mu$ is non-decreasing in $j$. And thus to obtain the optimal rate we might as well use $i$ to get an upper-bound of the form:
+    $$i\cdot s(\frac{c}{i}) \mu,$$
+    which is exactly what is achieved by the policy EQUI. Since both Markov chains only differ in their departure rates we can conclude that
+    $$E[N]^{EQUI} \leq E[N]^P.$$
+    Now recall that Little's law states: $E[N] = \frac{E[T]}{\Lambda}$. From this we can conclude that
+    $$E[T]^{EQUI} \leq E[T]^P$$
+    as desired
 \end{proof}

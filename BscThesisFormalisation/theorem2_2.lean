@@ -7,7 +7,6 @@ def isEqui (Que : queue) : Prop :=
 
 def SameSpeedUp (Q : SchedulePolicy) (P : SchedulePolicy) (h : P.dim = Q.dim): Prop :=
   ∀i, ∀j, ∀k, i k = j (Fin.cast h k) ∧ P.speedupF i = Q.speedupF j
-  -- Function.comp
 
 theorem EQUIOptimal (Que : queue) (Equi : MeanResponseTimePolicy):
   isEqui Equi.Q → ∀ x : MeanResponseTimePolicy, (h : x.Q.P.dim = Que.P.dim) → SameSpeedUp Que.P x.Q.P h → Equi.L ≤ x.L := by

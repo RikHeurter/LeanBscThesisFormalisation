@@ -18,6 +18,15 @@ def Sublinear (n : ℕ) (speedvec: ℝ(n)) (f : ℝ(n) → ℝ) : Prop :=
 def nonDecreasing (n : ℕ) (f : ℝ(n) → ℝ) : Prop :=
   ∀x, ‖x‖ ≥ 0 → ∀ε, ‖ε‖ > 0 → f x ≤ f (x + ε)
 
+-- structure SpeedUpFunction where
+--   n : ℕ
+--   speedvec: ℝ(n)
+--   c : ℕ(n)
+--   f : ℝ(n) → ℝ
+--   isublinear : Sublinear n speedvec f
+--   isconcave : myConcave n c f
+--   isnondecreasing : nonDecreasing n f
+
 def SpeedUpFunction (n : ℕ ) (speedvec: ℝ(n)) (c : ℕ(n)) (f : ℝ(n) → ℝ) : Prop :=
   Sublinear n speedvec f ∧ myConcave n c f ∧ nonDecreasing n f
 
@@ -55,6 +64,10 @@ structure SchedulePolicy where
   ispolicy : Policy dim cN distributionpolicy policy
   departurerates_uses_speedup: ∀ n, μ * ∑i : (Fin (distributionpolicy n)), speedupF (policy n i) = (departurerates n)
   cR_eq_cN : ∀ i, cN i = cR i
+  -- speedupF : SpeedUpFunction
+  -- speedupF_uses_same_n : speedupF.n = dim
+  -- speedupF_uses_speedvec : speedupF.speedvec = rw [] at speedvector
+  -- speedupF_uses_cores : speedupF.c = cN
   -- departurerates_contant_after_n: ∀n : ℕ, n ≥ ⌈‖cR‖⌉₊ → departurerates n = departurerates ⌈‖cR‖⌉₊
   -- TODO: require that after n becomes greater than ||c||_1 that it actually is indeed the same constantly.
   -- Otherwise is stable is way more difficult to implement.
@@ -63,7 +76,7 @@ structure SchedulePolicy where
 -- #check Norm.norm.
 
 def IsStable (P : SchedulePolicy) (Λ : ℝ) : Prop :=
-  ∃c : ℝ, c > 0 → ∃N : ℕ, ∀ n : ℕ, n ≥ N → (P.departurerates n)/Λ ≤ (1 - c)
+  ∃c : ℝ, c > 0 → ∃N : ℕ, ∀ n : ℕ, n ≥ N → Λ/(P.departurerates n) ≤ (1 - c)
 
 def ConstantArrival (Q : RateMatrix) (Λ : ℝ) : Prop :=
   ∀ i, Q.Q i (i + 1) = Λ
